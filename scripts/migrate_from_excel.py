@@ -39,6 +39,49 @@ def normalize_value(value):
     return value
 
 
+def parse_date_value(value):
+    if value in (None, ""):
+        return None
+    if hasattr(value, "date"):
+        try:
+            return value.date()
+        except Exception:
+            return None
+    if isinstance(value, str):
+        try:
+            return dt.datetime.fromisoformat(value).date()
+        except Exception:
+            return None
+    return None
+
+
+def normalize_int(value, *, fallback_date=None, part: str | None = None):
+    if value in (None, ""):
+        if fallback_date and part:
+            return getattr(fallback_date, part, None)
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    if hasattr(value, "date"):
+        try:
+            d = value.date()
+            return getattr(d, part, None) if part else None
+        except Exception:
+            return None
+    if isinstance(value, str):
+        if value.isdigit():
+            try:
+                return int(value)
+            except Exception:
+                return None
+        d = parse_date_value(value)
+        if d and part:
+            return getattr(d, part, None)
+    return None
+
+
 def today_iso() -> str:
     return dt.date.today().isoformat()
 
@@ -266,6 +309,7 @@ def migrate(in_dir: Path, db_target: str, region_filter: str | None) -> None:
         for s in sales_rows:
             txn_hash = s.get("txn_hash")
             txn_id = s.get("txn_id") or (f"txn_{txn_hash}" if txn_hash else f"txn_{uuid.uuid4().hex}")
+            date_obj = parse_date_value(s.get("date"))
             values = (
                 txn_id,
                 s.get("txn_key"),
@@ -274,9 +318,9 @@ def migrate(in_dir: Path, db_target: str, region_filter: str | None) -> None:
                 s.get("outlet_key"),
                 s.get("trader_key"),
                 iso_date(s.get("date")),
-                s.get("year"),
-                s.get("month"),
-                s.get("day"),
+                normalize_int(s.get("year"), fallback_date=date_obj, part="year"),
+                normalize_int(s.get("month"), fallback_date=date_obj, part="month"),
+                normalize_int(s.get("day"), fallback_date=date_obj, part="day"),
                 s.get("day_label"),
                 s.get("period"),
                 s.get("outlet_id") or None,
