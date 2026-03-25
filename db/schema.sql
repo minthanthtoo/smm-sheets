@@ -122,7 +122,8 @@ CREATE TABLE IF NOT EXISTS sales_transactions (
   source_row INTEGER,
   FOREIGN KEY (outlet_id) REFERENCES outlets(outlet_id),
   FOREIGN KEY (route_id) REFERENCES routes(route_id),
-  FOREIGN KEY (product_id) REFERENCES products(product_id)
+  FOREIGN KEY (product_id) REFERENCES products(product_id),
+  UNIQUE (txn_hash)
 );
 
 CREATE TABLE IF NOT EXISTS sales_financials (
@@ -244,8 +245,6 @@ CREATE TABLE IF NOT EXISTS ingested_traders (
 );
 -- SMM App schema v1 (indexes and constraints)
 
-CREATE UNIQUE INDEX IF NOT EXISTS ux_sales_transactions_txn_hash
-  ON sales_transactions (txn_hash);
 
 CREATE INDEX IF NOT EXISTS ix_sales_transactions_date
   ON sales_transactions (date);
