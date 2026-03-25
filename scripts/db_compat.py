@@ -33,6 +33,8 @@ class DBConn:
             return self._conn.execute(sql)
         if self.flavor == "postgres":
             sql = sql.replace("?", "%s")
+            if isinstance(params, (list, tuple)):
+                params = tuple(None if v == "" else v for v in params)
         return self._conn.execute(sql, params)
 
     def executescript(self, script: str):

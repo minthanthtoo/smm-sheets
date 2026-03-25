@@ -121,8 +121,8 @@ def quality_summary(start: str | None = None, end: str | None = None):
               COUNT(*) AS total_rows,
               SUM(CASE WHEN outlet_id IS NULL OR outlet_id = '' THEN 1 ELSE 0 END) AS missing_outlet,
               SUM(CASE WHEN product_id IS NULL OR product_id = '' THEN 1 ELSE 0 END) AS missing_product,
-              SUM(CASE WHEN date IS NULL OR date = '' THEN 1 ELSE 0 END) AS missing_date,
-              SUM(CASE WHEN qty_liter IS NULL OR qty_liter = '' THEN 1 ELSE 0 END) AS missing_liter,
+              SUM(CASE WHEN date IS NULL THEN 1 ELSE 0 END) AS missing_date,
+              SUM(CASE WHEN qty_liter IS NULL THEN 1 ELSE 0 END) AS missing_liter,
               SUM(CASE WHEN route_id IS NULL OR route_id = '' THEN 1 ELSE 0 END) AS missing_route
             FROM sales_transactions
             {where}

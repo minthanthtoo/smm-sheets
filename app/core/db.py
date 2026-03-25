@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+from decimal import Decimal
 from typing import Any, Dict
 
 from .config import DB_DSN
@@ -56,5 +57,13 @@ def row_to_dict(row: Any) -> Dict[str, Any]:
     if row is None:
         return {}
     if isinstance(row, dict):
-        return dict(row)
-    return {k: row[k] for k in row.keys()}
+        items = row.items()
+    else:
+        items = ((k, row[k]) for k in row.keys())
+    out: Dict[str, Any] = {}
+    for k, v in items:
+        if isinstance(v, Decimal):
+            out[k] = float(v)
+        else:
+            out[k] = v
+    return out

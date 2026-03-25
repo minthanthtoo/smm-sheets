@@ -16,9 +16,9 @@ def build_where(kind: str) -> str:
     if kind == "missing_product":
         return "(product_id IS NULL OR product_id = '')"
     if kind == "missing_date":
-        return "(date IS NULL OR date = '')"
+        return "(date IS NULL)"
     if kind == "missing_liter":
-        return "(qty_liter IS NULL OR qty_liter = '')"
+        return "(qty_liter IS NULL)"
     if kind == "missing_route":
         return "(route_id IS NULL OR route_id = '')"
     raise HTTPException(status_code=400, detail="Invalid kind")
@@ -81,4 +81,3 @@ async def quality_fix(request: Request):
         conn.close()
 
     return JSONResponse({"status": "ok"})
-
