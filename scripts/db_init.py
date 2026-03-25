@@ -33,8 +33,41 @@ def main() -> None:
                     conn.rollback()
                 except Exception:
                     pass
-        conn.executescript(schema_sql)
-        conn.commit()
+            try:
+                conn.execute(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS ux_sales_transactions_txn_hash ON sales_transactions (txn_hash)"
+                )
+                conn.commit()
+            except Exception:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+        try:
+            conn.executescript(schema_sql)
+            conn.commit()
+        except Exception as exc:
+            if conn.flavor == "postgres" and "InvalidForeignKey" in str(exc):
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+                fallback_sql = schema_sql.replace(
+                    "FOREIGN KEY (txn_hash) REFERENCES sales_transactions(txn_hash) ON DELETE CASCADE",
+                    "",
+                )
+                try:
+                    conn.execute("DROP TABLE IF EXISTS sales_financials")
+                    conn.commit()
+                except Exception:
+                    try:
+                        conn.rollback()
+                    except Exception:
+                        pass
+                conn.executescript(fallback_sql)
+                conn.commit()
+            else:
+                raise
     finally:
         conn.close()
 
