@@ -20,6 +20,7 @@ import openpyxl
 
 from etl_load_sources import (
     infer_region_id,
+    is_daily_sales_title,
     norm,
     norm_key,
     parse_daily_sales_sheet,
@@ -238,7 +239,7 @@ def process_files(paths: List[Path]):
             title_key = re.sub(r"[^a-z0-9]+", "", title_norm)
             if title_key.startswith("table"):
                 parse_table_sheet(path, ws, region_id, products, outlets, townships, routes, [])
-            elif title_key.startswith("dailysales"):
+            elif is_daily_sales_title(title_norm, title_key):
                 parse_daily_sales_sheet(path, ws, region_id, products, outlets, townships, sales_rows, financial_rows)
             elif "outletlist" in title_key:
                 parse_outlet_list_sheet(path, ws, region_id, outlets, townships, routes)

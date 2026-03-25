@@ -80,6 +80,10 @@ DAILY_HEADERS = {
     "stockid": "product_id_raw",
     "stockname": "stock_name_raw",
     "stock name": "stock_name_raw",
+    "column2": "product_id_raw",
+    "pg name": "pg_name_raw",
+    "pgname": "pg_name_raw",
+    "id": "customer_id_raw",
     "ml": "ml_raw",
     "ပါဝင်မှု": "participation_raw",
     "bottle": "qty_bottle",
@@ -91,7 +95,9 @@ DAILY_HEADERS = {
     "sales liter": "qty_liter",
     "parking": "parking_fee",
     "နှုံး": "unit_rate",
+    "bonus": "unit_rate",
     "သင့်ငွေ": "gross_amount",
+    "mmk": "gross_amount",
     "စာရင်းဖွင့်": "opening_balance",
     "ဈေးဟောင်းလျှော့": "old_price_discount",
     "ကော်မရှင်": "commission",
@@ -108,6 +114,20 @@ DAILY_HEADERS = {
     "ကြွေးရငွေ4": "receivable_4",
     "အကြွေးကျန်2": "outstanding_balance",
 }
+
+
+def is_daily_sales_title(title_norm: str, title_key: str) -> bool:
+    if title_key.startswith("dailysales") or "dailysales" in title_key:
+        return True
+    if "pgsales" in title_key or "pgdailysales" in title_key:
+        if "summary" in title_key or "report" in title_key:
+            return False
+        return True
+    if "pgsales" in title_norm or "pg daily sales" in title_norm:
+        if "summary" in title_norm or "report" in title_norm:
+            return False
+        return True
+    return False
 
 
 def detect_header_row(ws, target_headers: List[str], max_scan: int = 15) -> Optional[int]:
@@ -378,6 +398,9 @@ def parse_daily_sales_sheet(path: Path, ws, region_id: str,
     for idx, hv in enumerate(header_vals, start=1):
         if hv and hv not in header_to_col:
             header_to_col[hv] = idx
+    match_count = sum(1 for hv in header_to_col if hv in DAILY_HEADERS)
+    if match_count < 5:
+        return
 
     def get_col(hv: str, default_idx: int):
         col = header_to_col.get(hv)
@@ -427,6 +450,12 @@ def parse_daily_sales_sheet(path: Path, ws, region_id: str,
 
         outlet_name = norm(row_data.get("outlet_name_raw"))
         township = norm(row_data.get("township_name_raw"))
+        if not township and row_data.get("pg_name_raw") and row_data.get("channel"):
+            township = norm(row_data.get("channel"))
+            row_data["township_name_raw"] = township
+            row_data["channel"] = ""
+        if not outlet_name and row_data.get("customer_id_raw"):
+            outlet_name = norm(row_data.get("customer_id_raw"))
         stock_id_raw = norm(row_data.get("product_id_raw"))
         stock_name_raw = norm(row_data.get("stock_name_raw"))
         ml_raw = row_data.get("ml_raw")
@@ -503,6 +532,8 @@ def parse_daily_sales_sheet(path: Path, ws, region_id: str,
             # if car_no missing, backfill from outlet way_code when available
             if not row_data.get("car_no") and outlets.get(outlet_id, {}).get("way_code"):
                 row_data["car_no"] = outlets[outlet_id].get("way_code")
+        if not row_data.get("car_no") and row_data.get("pg_name_raw"):
+            row_data["car_no"] = norm(row_data.get("pg_name_raw"))
 
         txn_key = f"{path.name}|{ws.title}|{row_idx}"
         txn_id = make_id("txn", txn_key)
@@ -750,7 +781,7 @@ def main():
             title_key = re.sub(r"[^a-z0-9]+", "", title_norm)
             if title_key.startswith("table"):
                 parse_table_sheet(path, ws, region_id, products, outlets, townships, routes, [])
-            elif title_key.startswith("dailysales"):
+            elif is_daily_sales_title(title_norm, title_key):
                 parse_daily_sales_sheet(path, ws, region_id, products, outlets, townships, sales_rows, financial_rows)
             elif "outletlist" in title_key:
                 parse_outlet_list_sheet(path, ws, region_id, outlets, townships, routes)
