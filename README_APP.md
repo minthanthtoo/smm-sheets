@@ -31,7 +31,7 @@ Open:
 - http://127.0.0.1:8000/reports
 
 ## Environment
-- Set `SMM_DB` to point to a different SQLite DB path.
+- Set `DATABASE_URL` for Postgres, or `SMM_DB` for a different SQLite DB path.
 
 ## Notes
 - The migration script seeds history tables with effective dates.

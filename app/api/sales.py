@@ -88,7 +88,7 @@ async def create_sales(request: Request):
 
             conn.execute(
                 """
-                INSERT OR IGNORE INTO sales_transactions (
+                INSERT INTO sales_transactions (
                   txn_id, txn_key, txn_hash, day_key, outlet_key, trader_key,
                   date, year, month, day, day_label, period,
                   outlet_id, route_id, customer_id_raw, outlet_name_raw, township_name_raw, address_raw,
@@ -98,6 +98,7 @@ async def create_sales(request: Request):
                   sale_type_raw, sale_class_raw, participation_raw, parking_fee,
                   source_file, source_sheet, source_row
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (txn_id) DO NOTHING
                 """,
                 (
                     txn_id,
@@ -144,4 +145,3 @@ async def create_sales(request: Request):
         conn.close()
 
     return JSONResponse({"status": "ok", "count": len(rows), "inserted": inserted, "duplicates": duplicates})
-

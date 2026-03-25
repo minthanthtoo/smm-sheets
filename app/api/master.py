@@ -36,7 +36,12 @@ async def upsert_region(request: Request):
     conn = get_conn()
     try:
         conn.execute(
-            "INSERT OR REPLACE INTO regions (region_id, region_name) VALUES (?, ?)",
+            """
+            INSERT INTO regions (region_id, region_name)
+            VALUES (?, ?)
+            ON CONFLICT (region_id) DO UPDATE SET
+              region_name = excluded.region_name
+            """,
             (region_id, payload.get("region_name") or region_id),
         )
         conn.commit()
@@ -73,9 +78,17 @@ async def upsert_township(request: Request):
     try:
         conn.execute(
             """
-            INSERT OR REPLACE INTO townships (
+            INSERT INTO townships (
               township_id, township_name, township_name_en, region_id, aliases, source_file, source_sheet, source_row
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (township_id) DO UPDATE SET
+              township_name = excluded.township_name,
+              township_name_en = excluded.township_name_en,
+              region_id = excluded.region_id,
+              aliases = excluded.aliases,
+              source_file = excluded.source_file,
+              source_sheet = excluded.source_sheet,
+              source_row = excluded.source_row
             """,
             (
                 township_id,
@@ -169,10 +182,19 @@ async def upsert_route(request: Request):
     try:
         conn.execute(
             """
-            INSERT OR REPLACE INTO routes (
+            INSERT INTO routes (
               route_id, region_id, van_id, way_code, route_name, township_id,
               source_file, source_sheet, source_row
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (route_id) DO UPDATE SET
+              region_id = excluded.region_id,
+              van_id = excluded.van_id,
+              way_code = excluded.way_code,
+              route_name = excluded.route_name,
+              township_id = excluded.township_id,
+              source_file = excluded.source_file,
+              source_sheet = excluded.source_sheet,
+              source_row = excluded.source_row
             """,
             (
                 route_id,
@@ -263,10 +285,23 @@ async def upsert_product(request: Request):
     try:
         conn.execute(
             """
-            INSERT OR REPLACE INTO products (
+            INSERT INTO products (
               product_id, product_name, ml, packing, unit_type, sales_price, brand, category,
               pack_size, ml_per_bottle, source_file, source_sheet, source_row
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (product_id) DO UPDATE SET
+              product_name = excluded.product_name,
+              ml = excluded.ml,
+              packing = excluded.packing,
+              unit_type = excluded.unit_type,
+              sales_price = excluded.sales_price,
+              brand = excluded.brand,
+              category = excluded.category,
+              pack_size = excluded.pack_size,
+              ml_per_bottle = excluded.ml_per_bottle,
+              source_file = excluded.source_file,
+              source_sheet = excluded.source_sheet,
+              source_row = excluded.source_row
             """,
             (
                 product_id,
@@ -383,10 +418,22 @@ async def upsert_pjp(request: Request):
 
         conn.execute(
             """
-            INSERT OR REPLACE INTO pjp_plans (
+            INSERT INTO pjp_plans (
               plan_id, date, route_id, planned_a, planned_b, planned_c, planned_d, planned_s, total_planned,
               source_file, source_sheet, source_row
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (plan_id) DO UPDATE SET
+              date = excluded.date,
+              route_id = excluded.route_id,
+              planned_a = excluded.planned_a,
+              planned_b = excluded.planned_b,
+              planned_c = excluded.planned_c,
+              planned_d = excluded.planned_d,
+              planned_s = excluded.planned_s,
+              total_planned = excluded.total_planned,
+              source_file = excluded.source_file,
+              source_sheet = excluded.source_sheet,
+              source_row = excluded.source_row
             """,
             (
                 plan_id,
@@ -408,4 +455,3 @@ async def upsert_pjp(request: Request):
         conn.close()
 
     return JSONResponse({"status": "ok", "plan_id": plan_id})
-

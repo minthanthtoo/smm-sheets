@@ -7,11 +7,11 @@ from __future__ import annotations
 
 import argparse
 import csv
-import sqlite3
 from pathlib import Path
 from typing import List
 
 from regenerate_templates import regenerate_templates
+from db_compat import get_conn, resolve_db_target
 
 
 def write_csv(path: Path, rows: List[dict], fieldnames: List[str]) -> None:
@@ -23,9 +23,8 @@ def write_csv(path: Path, rows: List[dict], fieldnames: List[str]) -> None:
             w.writerow({k: r.get(k, "") for k in fieldnames})
 
 
-def export_db(db_path: Path, staging_dir: Path) -> None:
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
+def export_db(db_target: str, staging_dir: Path) -> None:
+    conn = get_conn(db_target)
     try:
         products = [dict(r) for r in conn.execute("SELECT * FROM products").fetchall()]
         outlets = [dict(r) for r in conn.execute("SELECT * FROM outlets").fetchall()]
@@ -96,9 +95,9 @@ def main() -> None:
     root = Path(args.root_dir).resolve()
     out_dir = (root / args.out_dir).resolve()
     staging_dir = out_dir / "staging"
-    db_path = (root / args.db).resolve()
+    db_target = resolve_db_target(root, args.db)
 
-    export_db(db_path, staging_dir)
+    export_db(db_target, staging_dir)
     regenerate_templates(root, root / "in", out_dir, clean_out=not args.no_clean)
 
 

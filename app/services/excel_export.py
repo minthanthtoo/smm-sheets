@@ -8,7 +8,7 @@ from typing import List
 
 from fastapi import HTTPException
 
-from app.core.config import DB_PATH, EXPORT_ROOT, ROOT
+from app.core.config import DB_DSN, EXPORT_ROOT, ROOT
 
 
 def list_regions() -> List[str]:
@@ -27,7 +27,7 @@ def run_excel_regeneration(out_dir: Path) -> None:
         sys.executable,
         str(ROOT / "scripts" / "regenerate_reports_from_db.py"),
         "--db",
-        str(DB_PATH),
+        str(DB_DSN),
         "--root-dir",
         str(ROOT),
         "--out-dir",
@@ -65,4 +65,3 @@ def build_export_zip(out_dir: Path, region: str | None) -> Path:
 def prepare_export_dir() -> Path:
     EXPORT_ROOT.mkdir(parents=True, exist_ok=True)
     return EXPORT_ROOT
-

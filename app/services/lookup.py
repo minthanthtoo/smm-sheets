@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import sqlite3
 from typing import Any, Dict
 
 
-def get_product_meta(conn: sqlite3.Connection, product_id: str, as_of: str) -> Dict[str, Any]:
+def get_product_meta(conn: Any, product_id: str, as_of: str) -> Dict[str, Any]:
     hist = conn.execute(
         """
         SELECT * FROM product_history
@@ -31,7 +30,7 @@ def get_product_meta(conn: sqlite3.Connection, product_id: str, as_of: str) -> D
     }
 
 
-def get_outlet_route_as_of(conn: sqlite3.Connection, outlet_id: str, as_of: str) -> str | None:
+def get_outlet_route_as_of(conn: Any, outlet_id: str, as_of: str) -> str | None:
     row = conn.execute(
         """
         SELECT route_id FROM outlet_history
@@ -42,4 +41,3 @@ def get_outlet_route_as_of(conn: sqlite3.Connection, outlet_id: str, as_of: str)
         (outlet_id, as_of, as_of),
     ).fetchone()
     return row["route_id"] if row else None
-

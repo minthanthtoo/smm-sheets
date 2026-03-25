@@ -3,7 +3,7 @@ services:
     name: smm-sheets
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python scripts/db_init.py --db $SMM_DB && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    startCommand: python scripts/db_init.py --db ${DATABASE_URL:-$SMM_DB} && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     autoDeploy: true
     envVars:
       - key: SMM_DB

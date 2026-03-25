@@ -42,7 +42,8 @@ The Reports dashboard includes **Export Excel**, which regenerates Excel files u
 
 ## Environment Variables
 
-- `SMM_DB` : SQLite DB path (default `db/app.db`)
+- `DATABASE_URL` : Postgres connection URL (takes priority when set)
+- `SMM_DB` : SQLite DB path (used when `DATABASE_URL` is not set; default `db/app.db`)
 - `SMM_STATIC_DIR` : static assets path (default `app/static`)
 - `SMM_EXPORT_ROOT` : export folder for ZIPs (default `out/exports`)
 - `SMM_IMPORT_ROOT` : import upload folder (default `out/imports`)
@@ -62,16 +63,17 @@ source/           # Excel templates (by region)
 
 ## Publishing Notes
 
-- Use `SMM_DB` to point at production DB.
+- Use `DATABASE_URL` for Postgres (Supabase) or `SMM_DB` for SQLite.
 - Ensure `source/<REGION>` templates are present for Excel regeneration.
 - Exports are stored under `out/exports/` for auditability.
 
 ## Render Deployment
 
 This repo includes `render.yaml` for one‑click deployment. On the free tier, it uses `/tmp` (ephemeral). For persistence, upgrade and mount a disk.
+Set `DATABASE_URL` in Render Environment if you want to use Supabase/Postgres.
 
 Behavior:
-- On boot, the app runs `scripts/db_init.py` against the path in `SMM_DB` (safe to re-run).
+- On boot, the app runs `scripts/db_init.py` against `DATABASE_URL` (if set) or `SMM_DB` (safe to re-run).
 - Uvicorn serves the app on `$PORT` as required by Render.
 
 If you use Render, commit `render.yaml` and connect the repo as a Blueprint.

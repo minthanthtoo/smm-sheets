@@ -8,7 +8,7 @@ from typing import List
 
 from fastapi import HTTPException
 
-from app.core.config import DB_PATH, IMPORT_ROOT, ROOT
+from app.core.config import DB_DSN, IMPORT_ROOT, ROOT
 
 
 def prepare_import_dir() -> Path:
@@ -28,7 +28,7 @@ def run_migration(in_dir: Path, region: str | None = None) -> None:
         sys.executable,
         str(ROOT / "scripts" / "migrate_from_excel.py"),
         "--db",
-        str(DB_PATH),
+        str(DB_DSN),
         "--in-dir",
         str(in_dir),
     ]
@@ -44,4 +44,3 @@ def list_input_files(in_dir: Path) -> List[str]:
     if not in_dir.exists():
         return []
     return sorted([p.name for p in in_dir.iterdir() if p.is_file()])
-

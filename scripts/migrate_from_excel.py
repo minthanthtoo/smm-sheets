@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Migrate Excel inputs into SQLite DB with history tables.
+"""Migrate Excel inputs into SQLite/Postgres DB with history tables.
 
 Usage:
   python3 scripts/db_init.py --db db/app.db
@@ -11,13 +11,13 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-import sqlite3
 import uuid
 from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 
 from incremental_ingest import iter_input_files, process_files
 from etl_load_sources import infer_region_id, norm_key
+from db_compat import get_conn, resolve_db_target
 
 
 def iso_date(value) -> str:
@@ -32,9 +32,13 @@ def today_iso() -> str:
     return dt.date.today().isoformat()
 
 
-def ensure_region(conn: sqlite3.Connection, region_id: str):
+def ensure_region(conn, region_id: str):
     conn.execute(
-        "INSERT OR IGNORE INTO regions (region_id, region_name) VALUES (?, ?)",
+        """
+        INSERT INTO regions (region_id, region_name)
+        VALUES (?, ?)
+        ON CONFLICT (region_id) DO NOTHING
+        """,
         (region_id, region_id),
     )
 
@@ -62,7 +66,7 @@ def earliest_dates_by_key(rows: List[dict], key: str) -> Dict[str, str]:
     return out
 
 
-def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
+def migrate(in_dir: Path, db_target: str, region_filter: str | None) -> None:
     files = iter_input_files(in_dir)
     if region_filter:
         region_filter = region_filter.upper()
@@ -70,10 +74,10 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
 
     products, outlets, townships, routes, sales_rows, financial_rows, pjp_rows, route_outlet_rows = process_files(files)
 
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
+    conn = get_conn(db_target)
     try:
-        conn.execute("PRAGMA foreign_keys = ON")
+        if conn.flavor == "sqlite":
+            conn.execute("PRAGMA foreign_keys = ON")
 
         # regions
         for p in files:
@@ -81,14 +85,18 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
 
         # townships
         for t in townships.values():
+            township_id = t.get("township_id")
+            if not township_id:
+                continue
             conn.execute(
                 """
-                INSERT OR IGNORE INTO townships (
+                INSERT INTO townships (
                   township_id, township_name, township_name_en, region_id, source_file
                 ) VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT (township_id) DO NOTHING
                 """,
                 (
-                    t.get("township_id"),
+                    township_id,
                     t.get("township_name"),
                     t.get("township_name_en"),
                     t.get("region_id"),
@@ -99,22 +107,29 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
         # lookup for township ids
         township_id_by_key: Dict[Tuple[str, str], str] = {}
         for t in townships.values():
+            township_id = t.get("township_id")
+            if not township_id:
+                continue
             region_id = t.get("region_id") or ""
             name = t.get("township_name") or ""
             if region_id and name:
-                township_id_by_key[(region_id, norm_key(name))] = t.get("township_id")
+                township_id_by_key[(region_id, norm_key(name))] = township_id
 
         # routes
         route_id_by_key: Dict[Tuple[str, str], str] = {}
         for r in routes.values():
+            route_id = r.get("route_id")
+            if not route_id:
+                continue
             conn.execute(
                 """
-                INSERT OR IGNORE INTO routes (
+                INSERT INTO routes (
                   route_id, region_id, van_id, way_code, route_name, source_file
                 ) VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT (route_id) DO NOTHING
                 """,
                 (
-                    r.get("route_id"),
+                    route_id,
                     r.get("region_id"),
                     r.get("van_id"),
                     r.get("way_code"),
@@ -125,19 +140,23 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
             region_id = r.get("region_id") or ""
             way_code = r.get("way_code") or ""
             if region_id and way_code:
-                route_id_by_key[(region_id, norm_key(way_code))] = r.get("route_id")
+                route_id_by_key[(region_id, norm_key(way_code))] = route_id
 
         # products
         for p in products.values():
+            product_id = p.get("product_id")
+            if not product_id:
+                continue
             conn.execute(
                 """
-                INSERT OR IGNORE INTO products (
+                INSERT INTO products (
                   product_id, product_name, ml, packing, sales_price, unit_type, category,
                   source_file, source_sheet, source_row
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (product_id) DO NOTHING
                 """,
                 (
-                    p.get("product_id"),
+                    product_id,
                     p.get("product_name"),
                     p.get("ml"),
                     p.get("packing"),
@@ -152,6 +171,9 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
 
         # outlets
         for o in outlets.values():
+            outlet_id = o.get("outlet_id")
+            if not outlet_id:
+                continue
             township_name = o.get("township_name") or ""
             township_id = None
             # infer region from township id mapping
@@ -164,14 +186,15 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
                 region_id = ""
             conn.execute(
                 """
-                INSERT OR IGNORE INTO outlets (
+                INSERT INTO outlets (
                   outlet_id, outlet_code, outlet_name_mm, outlet_name_en, outlet_type, address_full,
                   township_id, township_name_raw, way_code, contact_phone, agent_name, responsible_person,
                   notes, source_file, source_sheet, source_row
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (outlet_id) DO NOTHING
                 """,
                 (
-                    o.get("outlet_id"),
+                    outlet_id,
                     o.get("outlet_code"),
                     o.get("outlet_name_mm"),
                     o.get("outlet_name_en"),
@@ -199,18 +222,19 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
 
             # outlet history seed
             effective_from = today_iso()
-            if o.get("outlet_id"):
+            if outlet_id:
                 conn.execute(
                     """
-                    INSERT OR IGNORE INTO outlet_history (
+                    INSERT INTO outlet_history (
                       outlet_history_id, outlet_id, outlet_name_mm, outlet_name_en, outlet_type,
                       category, route_id, contact_phone, address_full, responsible_person, agent_name,
                       status, effective_from, created_at, created_by
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ON CONFLICT (outlet_history_id) DO NOTHING
                     """,
                     (
                         f"outh_{uuid.uuid4().hex}",
-                        o.get("outlet_id"),
+                        outlet_id,
                         o.get("outlet_name_mm"),
                         o.get("outlet_name_en"),
                         o.get("outlet_type"),
@@ -229,9 +253,11 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
 
         # sales transactions
         for s in sales_rows:
+            txn_hash = s.get("txn_hash")
+            txn_id = s.get("txn_id") or (f"txn_{txn_hash}" if txn_hash else f"txn_{uuid.uuid4().hex}")
             conn.execute(
                 """
-                INSERT OR IGNORE INTO sales_transactions (
+                INSERT INTO sales_transactions (
                   txn_id, txn_key, txn_hash, day_key, outlet_key, trader_key,
                   date, year, month, day, day_label, period,
                   outlet_id, route_id, customer_id_raw, outlet_name_raw, township_name_raw, address_raw,
@@ -241,11 +267,12 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
                   sale_type_raw, sale_class_raw, participation_raw, parking_fee,
                   source_file, source_sheet, source_row
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (txn_id) DO NOTHING
                 """,
                 (
-                    s.get("txn_id"),
+                    txn_id,
                     s.get("txn_key"),
-                    s.get("txn_hash"),
+                    txn_hash,
                     s.get("day_key"),
                     s.get("outlet_key"),
                     s.get("trader_key"),
@@ -288,12 +315,13 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
                 continue
             conn.execute(
                 """
-                INSERT OR IGNORE INTO sales_financials (
+                INSERT INTO sales_financials (
                   txn_hash, unit_rate, gross_amount, opening_balance, old_price_discount, commission,
                   discount, transport_discount, transport_add, payment_date_1, receivable_1,
                   payment_date_2, receivable_2, payment_date_3, receivable_3, payment_date_4,
                   receivable_4, outstanding_balance
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (txn_hash) DO NOTHING
                 """,
                 (
                     f.get("txn_hash"),
@@ -340,10 +368,11 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
                 ml = None
             conn.execute(
                 """
-                INSERT OR IGNORE INTO product_history (
+                INSERT INTO product_history (
                   product_history_id, product_id, sales_price, pack_size, ml_per_bottle,
                   unit_type, category, effective_from, created_at, created_by
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (product_history_id) DO NOTHING
                 """,
                 (
                     f"prh_{uuid.uuid4().hex}",
@@ -365,10 +394,11 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
                 continue
             conn.execute(
                 """
-                INSERT OR IGNORE INTO route_history (
+                INSERT INTO route_history (
                   route_history_id, route_id, region_id, van_id, way_code, route_name,
                   township_id, effective_from, created_at, created_by
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (route_history_id) DO NOTHING
                 """,
                 (
                     f"rth_{uuid.uuid4().hex}",
@@ -388,17 +418,19 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
         for ro in route_outlet_rows:
             if not ro.get("route_id") or not ro.get("outlet_id"):
                 continue
+            start_date = ro.get("start_date") or today_iso()
             conn.execute(
                 """
-                INSERT OR IGNORE INTO route_outlets (
+                INSERT INTO route_outlets (
                   route_id, outlet_id, category, start_date, end_date
                 ) VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT (route_id, outlet_id, start_date) DO NOTHING
                 """,
                 (
                     ro.get("route_id"),
                     ro.get("outlet_id"),
                     ro.get("category"),
-                    ro.get("start_date") or None,
+                    start_date,
                     ro.get("end_date") or None,
                 ),
             )
@@ -417,10 +449,11 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
                 continue
             conn.execute(
                 """
-                INSERT OR IGNORE INTO township_history (
+                INSERT INTO township_history (
                   township_history_id, township_id, township_name, township_name_en, region_id,
                   effective_from, created_at, created_by
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (township_history_id) DO NOTHING
                 """,
                 (
                     f"twh_{uuid.uuid4().hex}",
@@ -440,10 +473,11 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
                 continue
             conn.execute(
                 """
-                INSERT OR IGNORE INTO pjp_plans (
+                INSERT INTO pjp_plans (
                   plan_id, date, route_id, planned_a, planned_b, planned_c,
                   planned_d, planned_s, total_planned, source_file, source_sheet, source_row
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (plan_id) DO NOTHING
                 """,
                 (
                     plan.get("plan_id"),
@@ -465,21 +499,21 @@ def migrate(in_dir: Path, db_path: Path, region_filter: str | None) -> None:
     finally:
         conn.close()
 
-    print(f"Migrated {len(files)} files into {db_path}")
+    print(f"Migrated {len(files)} files into {db_target}")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--in-dir", default="in", help="Input directory with Excel files")
-    parser.add_argument("--db", default="db/app.db", help="SQLite DB path")
+    parser.add_argument("--db", default="db/app.db", help="DB path or Postgres URL")
     parser.add_argument("--region", default=None, help="Optional region filter (e.g., MTL)")
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[1]
     in_dir = (root / args.in_dir).resolve()
-    db_path = (root / args.db).resolve()
+    db_target = resolve_db_target(root, args.db)
 
-    migrate(in_dir, db_path, args.region)
+    migrate(in_dir, db_target, args.region)
 
 
 if __name__ == "__main__":

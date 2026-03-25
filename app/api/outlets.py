@@ -116,6 +116,11 @@ async def upsert_outlet(request: Request):
     payload = await request.json()
     outlet_id = payload.get("outlet_id") or f"out_{uuid.uuid4().hex}"
     effective_from = payload.get("effective_from") or today_iso()
+    try:
+        effective_from_date = dt.date.fromisoformat(effective_from)
+        prev_date = (effective_from_date - dt.timedelta(days=1)).isoformat()
+    except Exception:
+        prev_date = None
 
     conn = get_conn()
     try:
@@ -126,11 +131,12 @@ async def upsert_outlet(request: Request):
 
         conn.execute(
             """
-            INSERT OR IGNORE INTO outlets (
+            INSERT INTO outlets (
               outlet_id, outlet_code, outlet_name_mm, outlet_name_en, outlet_type, address_full,
               township_id, township_name_raw, way_code, contact_phone, agent_name, responsible_person,
               notes
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (outlet_id) DO NOTHING
             """,
             (
                 outlet_id,
@@ -152,10 +158,10 @@ async def upsert_outlet(request: Request):
         conn.execute(
             """
             UPDATE outlet_history
-            SET effective_to = date(?, '-1 day')
+            SET effective_to = ?
             WHERE outlet_id = ? AND effective_to IS NULL
             """,
-            (effective_from, outlet_id),
+            (prev_date, outlet_id),
         )
 
         conn.execute(
@@ -216,6 +222,11 @@ async def merge_outlets(request: Request):
     primary_id = payload.get("primary_outlet_id")
     dup_id = payload.get("duplicate_outlet_id")
     merge_date = payload.get("merge_date") or today_iso()
+    try:
+        merge_date_dt = dt.date.fromisoformat(merge_date)
+        prev_date = (merge_date_dt - dt.timedelta(days=1)).isoformat()
+    except Exception:
+        prev_date = None
     reason = payload.get("reason") or "merge"
 
     if not primary_id or not dup_id:
@@ -229,8 +240,8 @@ async def merge_outlets(request: Request):
         )
 
         conn.execute(
-            "UPDATE outlet_history SET effective_to = date(?, '-1 day') WHERE outlet_id = ? AND effective_to IS NULL",
-            (merge_date, dup_id),
+            "UPDATE outlet_history SET effective_to = ? WHERE outlet_id = ? AND effective_to IS NULL",
+            (prev_date, dup_id),
         )
 
         conn.execute(
@@ -266,4 +277,3 @@ async def merge_outlets(request: Request):
         conn.close()
 
     return JSONResponse({"status": "ok"})
-
