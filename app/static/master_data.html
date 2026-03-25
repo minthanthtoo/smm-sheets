@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMM Master Data</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Noto+Serif+Myanmar:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-0: #fff6ec;
+      --bg-1: #f9efe1;
+      --ink: #122023;
+      --muted: #516266;
+      --primary: #0f4c5c;
+      --accent: #f2a900;
+      --surface: #fffdf9;
+      --surface-2: #fff8f0;
+      --border: #e8dcca;
+      --shadow: 0 20px 40px rgba(15, 76, 92, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 700px at 80% -10%, #ffe9c9, transparent 60%),
+                  radial-gradient(900px 600px at 0% 0%, #e7f4f2, transparent 55%),
+                  linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      min-height: 100vh;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 20px;
+      padding: 22px 24px 80px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .nav {
+      padding: 18px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0f4c5c, #1d7a84);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+
+    .nav h1 { font-size: 18px; margin: 0; }
+    .nav small { color: var(--muted); }
+
+    .nav-list {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav-item {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      background: var(--surface-2);
+      color: var(--primary);
+      border: 1px solid #e9c78a;
+    }
+
+    .main { display: grid; gap: 18px; }
+
+    .topbar {
+      padding: 18px 22px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .title { font-size: 24px; font-weight: 700; margin: 0; }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .section {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .section h3 { margin: 0; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--primary);
+      border-color: #d7c2a4;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .nav { position: static; }
+      .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 720px) {
+      .controls { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="nav panel">
+      <div class="brand">
+        <div class="brand-badge">SMM</div>
+        <div>
+          <h1>Sales Ops</h1>
+          <small>Master Data</small>
+        </div>
+      </div>
+      <ul class="nav-list">
+        <li><a class="nav-item" href="/daily-sales">Daily Sales</a></li>
+        <li><a class="nav-item" href="/outlets">Outlets</a></li>
+        <li><a class="nav-item active" href="/master-data">Master Data</a></li>
+        <li><a class="nav-item" href="/imports">Import Hub</a></li>
+        <li><a class="nav-item" href="/quality">Data Quality</a></li>
+        <li><a class="nav-item" href="/reports">Reports</a></li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <section class="topbar panel">
+        <div>
+          <h2 class="title">Master Data Control</h2>
+          <div class="meta">
+            <span>Products, Townships, Routes, PJP plans</span>
+            <span class="myanmar">အခြေခံဒေတာ ပြင်ဆင်ခြင်း</span>
+          </div>
+        </div>
+        <div class="controls" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+          <label class="field">Region Filter
+            <select id="md-region-filter">
+              <option value="">All Regions</option>
+            </select>
+          </label>
+          <label class="field"><span>&nbsp;</span><button id="md-refresh" class="btn ghost" type="button">Reload Lists</button></label>
+        </div>
+      </section>
+
+      <section class="panel section">
+        <h3>Products</h3>
+        <div class="controls">
+          <label class="field">Product ID <input id="prod-id" placeholder="optional" /></label>
+          <label class="field">Product Name <input id="prod-name" /></label>
+          <label class="field">ML <input id="prod-ml" /></label>
+          <label class="field">Packing <input id="prod-pack" /></label>
+          <label class="field">Unit Type <input id="prod-unit" /></label>
+          <label class="field">Sales Price <input id="prod-price" /></label>
+          <label class="field">Brand <input id="prod-brand" /></label>
+          <label class="field">Category <input id="prod-category" /></label>
+          <label class="field">Pack Size <input id="prod-packsize" /></label>
+          <label class="field">ML/Bottle <input id="prod-mlb" /></label>
+          <label class="field"><span>&nbsp;</span><button id="prod-save" class="btn" type="button">Save Product</button></label>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <input id="prod-history-id" placeholder="Product ID for history" />
+          <input id="prod-hist-from" type="date" />
+          <input id="prod-hist-to" type="date" />
+          <input id="prod-hist-price" placeholder="Sales Price" />
+          <input id="prod-hist-pack" placeholder="Pack Size" />
+          <input id="prod-hist-mlb" placeholder="ML/Bottle" />
+          <button id="prod-hist-save" class="btn ghost" type="button">Add History</button>
+          <button id="prod-hist-load" class="btn ghost" type="button">Load History</button>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>ML</th><th>Packing</th><th>Price</th></tr></thead>
+          <tbody id="prod-body"></tbody>
+        </table>
+        <div id="prod-history" style="font-size:13px; color:var(--muted);"></div>
+      </section>
+
+      <section class="panel section">
+        <h3>Townships</h3>
+        <div class="controls">
+          <label class="field">Township ID <input id="town-id" placeholder="optional" /></label>
+          <label class="field">Township Name <input id="town-name" /></label>
+          <label class="field">Township Name EN <input id="town-name-en" /></label>
+          <label class="field">Region ID <input id="town-region" /></label>
+          <label class="field">Aliases <input id="town-alias" /></label>
+          <label class="field"><span>&nbsp;</span><button id="town-save" class="btn" type="button">Save Township</button></label>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <input id="town-history-id" placeholder="Township ID for history" />
+          <input id="town-hist-from" type="date" />
+          <input id="town-hist-to" type="date" />
+          <input id="town-hist-name" placeholder="Name" />
+          <input id="town-hist-region" placeholder="Region" />
+          <button id="town-hist-save" class="btn ghost" type="button">Add History</button>
+          <button id="town-hist-load" class="btn ghost" type="button">Load History</button>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Region</th></tr></thead>
+          <tbody id="town-body"></tbody>
+        </table>
+        <div id="town-history" style="font-size:13px; color:var(--muted);"></div>
+      </section>
+
+      <section class="panel section">
+        <h3>Routes</h3>
+        <div class="controls">
+          <label class="field">Route ID <input id="route-id" placeholder="optional" /></label>
+          <label class="field">Route Name <input id="route-name" /></label>
+          <label class="field">Region ID <input id="route-region" /></label>
+          <label class="field">Van ID <input id="route-van" /></label>
+          <label class="field">Way Code <input id="route-way" /></label>
+          <label class="field">Township ID <input id="route-township" /></label>
+          <label class="field"><span>&nbsp;</span><button id="route-save" class="btn" type="button">Save Route</button></label>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <input id="route-history-id" placeholder="Route ID for history" />
+          <input id="route-hist-from" type="date" />
+          <input id="route-hist-to" type="date" />
+          <input id="route-hist-name" placeholder="Route Name" />
+          <input id="route-hist-region" placeholder="Region" />
+          <input id="route-hist-van" placeholder="Van" />
+          <input id="route-hist-way" placeholder="Way" />
+          <input id="route-hist-township" placeholder="Township" />
+          <button id="route-hist-save" class="btn ghost" type="button">Add History</button>
+          <button id="route-hist-load" class="btn ghost" type="button">Load History</button>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Region</th><th>Van</th></tr></thead>
+          <tbody id="route-body"></tbody>
+        </table>
+        <div id="route-history" style="font-size:13px; color:var(--muted);"></div>
+      </section>
+
+      <section class="panel section">
+        <h3>PJP Plans</h3>
+        <div class="controls">
+          <label class="field">Date <input id="pjp-date" type="date" /></label>
+          <label class="field">Route ID <input id="pjp-route" /></label>
+          <label class="field">Planned A <input id="pjp-a" /></label>
+          <label class="field">Planned B <input id="pjp-b" /></label>
+          <label class="field">Planned C <input id="pjp-c" /></label>
+          <label class="field">Planned D <input id="pjp-d" /></label>
+          <label class="field">Planned S <input id="pjp-s" /></label>
+          <label class="field">Total Planned <input id="pjp-total" /></label>
+          <label class="field"><span>&nbsp;</span><button id="pjp-save" class="btn" type="button">Save Plan</button></label>
+        </div>
+        <div style="display:flex; gap:12px; align-items:center;">
+          <input id="pjp-filter-date" type="date" />
+          <button id="pjp-load" class="btn ghost" type="button">Load Plans</button>
+        </div>
+        <table>
+          <thead><tr><th>Date</th><th>Route</th><th>Total</th><th>A</th><th>B</th><th>C</th><th>D</th><th>S</th></tr></thead>
+          <tbody id="pjp-body"></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    async function postJSON(url, payload) {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    }
+
+    async function loadRegions() {
+      const select = document.getElementById('md-region-filter');
+      try {
+        const res = await fetch('/api/master/regions');
+        const data = await res.json();
+        const rows = data.rows || [];
+        select.innerHTML = '<option value=\"\">All Regions</option>';
+        rows.forEach((r) => {
+          const opt = document.createElement('option');
+          opt.value = r.region_id;
+          opt.textContent = r.region_id;
+          select.appendChild(opt);
+        });
+        if (!rows.length) {
+          const alt = await fetch('/api/regions');
+          const altData = await alt.json();
+          (altData.regions || []).forEach((r) => {
+            const opt = document.createElement('option');
+            opt.value = r;
+            opt.textContent = r;
+            select.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadProducts() {
+      const res = await fetch('/api/master/products');
+      const data = await res.json();
+      const body = document.getElementById('prod-body');
+      body.innerHTML = '';
+      (data.rows || []).forEach((row) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row.product_id}</td><td>${row.product_name || ''}</td><td>${row.ml || ''}</td><td>${row.packing || ''}</td><td>${row.sales_price || ''}</td>`;
+        body.appendChild(tr);
+      });
+    }
+
+    async function loadTownships() {
+      const region = document.getElementById('md-region-filter').value;
+      const url = region ? `/api/master/townships?region_id=${region}` : '/api/master/townships';
+      const res = await fetch(url);
+      const data = await res.json();
+      const body = document.getElementById('town-body');
+      body.innerHTML = '';
+      (data.rows || []).forEach((row) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row.township_id}</td><td>${row.township_name || ''}</td><td>${row.region_id || ''}</td>`;
+        body.appendChild(tr);
+      });
+    }
+
+    async function loadRoutes() {
+      const region = document.getElementById('md-region-filter').value;
+      const url = region ? `/api/master/routes?region_id=${region}` : '/api/master/routes';
+      const res = await fetch(url);
+      const data = await res.json();
+      const body = document.getElementById('route-body');
+      body.innerHTML = '';
+      (data.rows || []).forEach((row) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row.route_id}</td><td>${row.route_name || ''}</td><td>${row.region_id || ''}</td><td>${row.van_id || ''}</td>`;
+        body.appendChild(tr);
+      });
+    }
+
+    async function loadPjp() {
+      const date = document.getElementById('pjp-filter-date').value;
+      const res = await fetch(date ? `/api/master/pjp?date=${date}` : '/api/master/pjp');
+      const data = await res.json();
+      const body = document.getElementById('pjp-body');
+      body.innerHTML = '';
+      (data.rows || []).forEach((row) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row.date}</td><td>${row.route_id}</td><td>${row.total_planned || ''}</td><td>${row.planned_a || ''}</td><td>${row.planned_b || ''}</td><td>${row.planned_c || ''}</td><td>${row.planned_d || ''}</td><td>${row.planned_s || ''}</td>`;
+        body.appendChild(tr);
+      });
+    }
+
+    async function saveProduct() {
+      await postJSON('/api/master/products', {
+        product_id: document.getElementById('prod-id').value || null,
+        product_name: document.getElementById('prod-name').value,
+        ml: document.getElementById('prod-ml').value,
+        packing: document.getElementById('prod-pack').value,
+        unit_type: document.getElementById('prod-unit').value,
+        sales_price: document.getElementById('prod-price').value,
+        brand: document.getElementById('prod-brand').value,
+        category: document.getElementById('prod-category').value,
+        pack_size: document.getElementById('prod-packsize').value,
+        ml_per_bottle: document.getElementById('prod-mlb').value,
+      });
+      await loadProducts();
+    }
+
+    async function saveProductHistory() {
+      await postJSON('/api/master/products/history', {
+        product_id: document.getElementById('prod-history-id').value,
+        effective_from: document.getElementById('prod-hist-from').value,
+        effective_to: document.getElementById('prod-hist-to').value,
+        sales_price: document.getElementById('prod-hist-price').value,
+        pack_size: document.getElementById('prod-hist-pack').value,
+        ml_per_bottle: document.getElementById('prod-hist-mlb').value,
+      });
+    }
+
+    async function loadProductHistory() {
+      const id = document.getElementById('prod-history-id').value;
+      if (!id) return;
+      const res = await fetch(`/api/master/products/history?product_id=${id}`);
+      const data = await res.json();
+      const target = document.getElementById('prod-history');
+      target.innerHTML = (data.rows || []).map((r) => `${r.effective_from} → ${r.effective_to || 'present'} | ${r.sales_price || ''}`).join('<br>');
+    }
+
+    async function saveTownship() {
+      await postJSON('/api/master/townships', {
+        township_id: document.getElementById('town-id').value || null,
+        township_name: document.getElementById('town-name').value,
+        township_name_en: document.getElementById('town-name-en').value,
+        region_id: document.getElementById('town-region').value,
+        aliases: document.getElementById('town-alias').value,
+      });
+      await loadTownships();
+    }
+
+    async function saveTownshipHistory() {
+      await postJSON('/api/master/townships/history', {
+        township_id: document.getElementById('town-history-id').value,
+        effective_from: document.getElementById('town-hist-from').value,
+        effective_to: document.getElementById('town-hist-to').value,
+        township_name: document.getElementById('town-hist-name').value,
+        region_id: document.getElementById('town-hist-region').value,
+      });
+    }
+
+    async function loadTownshipHistory() {
+      const id = document.getElementById('town-history-id').value;
+      if (!id) return;
+      const res = await fetch(`/api/master/townships/history?township_id=${id}`);
+      const data = await res.json();
+      const target = document.getElementById('town-history');
+      target.innerHTML = (data.rows || []).map((r) => `${r.effective_from} → ${r.effective_to || 'present'} | ${r.township_name || ''}`).join('<br>');
+    }
+
+    async function saveRoute() {
+      await postJSON('/api/master/routes', {
+        route_id: document.getElementById('route-id').value || null,
+        route_name: document.getElementById('route-name').value,
+        region_id: document.getElementById('route-region').value,
+        van_id: document.getElementById('route-van').value,
+        way_code: document.getElementById('route-way').value,
+        township_id: document.getElementById('route-township').value,
+      });
+      await loadRoutes();
+    }
+
+    async function saveRouteHistory() {
+      await postJSON('/api/master/routes/history', {
+        route_id: document.getElementById('route-history-id').value,
+        effective_from: document.getElementById('route-hist-from').value,
+        effective_to: document.getElementById('route-hist-to').value,
+        route_name: document.getElementById('route-hist-name').value,
+        region_id: document.getElementById('route-hist-region').value,
+        van_id: document.getElementById('route-hist-van').value,
+        way_code: document.getElementById('route-hist-way').value,
+        township_id: document.getElementById('route-hist-township').value,
+      });
+    }
+
+    async function loadRouteHistory() {
+      const id = document.getElementById('route-history-id').value;
+      if (!id) return;
+      const res = await fetch(`/api/master/routes/history?route_id=${id}`);
+      const data = await res.json();
+      const target = document.getElementById('route-history');
+      target.innerHTML = (data.rows || []).map((r) => `${r.effective_from} → ${r.effective_to || 'present'} | ${r.route_name || ''}`).join('<br>');
+    }
+
+    async function savePjp() {
+      await postJSON('/api/master/pjp', {
+        date: document.getElementById('pjp-date').value,
+        route_id: document.getElementById('pjp-route').value,
+        planned_a: document.getElementById('pjp-a').value,
+        planned_b: document.getElementById('pjp-b').value,
+        planned_c: document.getElementById('pjp-c').value,
+        planned_d: document.getElementById('pjp-d').value,
+        planned_s: document.getElementById('pjp-s').value,
+        total_planned: document.getElementById('pjp-total').value,
+      });
+      await loadPjp();
+    }
+
+    document.getElementById('prod-save').addEventListener('click', saveProduct);
+    document.getElementById('prod-hist-save').addEventListener('click', saveProductHistory);
+    document.getElementById('prod-hist-load').addEventListener('click', loadProductHistory);
+    document.getElementById('town-save').addEventListener('click', saveTownship);
+    document.getElementById('town-hist-save').addEventListener('click', saveTownshipHistory);
+    document.getElementById('town-hist-load').addEventListener('click', loadTownshipHistory);
+    document.getElementById('route-save').addEventListener('click', saveRoute);
+    document.getElementById('route-hist-save').addEventListener('click', saveRouteHistory);
+    document.getElementById('route-hist-load').addEventListener('click', loadRouteHistory);
+    document.getElementById('pjp-save').addEventListener('click', savePjp);
+    document.getElementById('pjp-load').addEventListener('click', loadPjp);
+
+    document.getElementById('md-refresh').addEventListener('click', () => {
+      loadProducts();
+      loadTownships();
+      loadRoutes();
+      loadPjp();
+    });
+    document.getElementById('md-region-filter').addEventListener('change', () => {
+      loadTownships();
+      loadRoutes();
+    });
+
+    loadRegions();
+    loadProducts();
+    loadTownships();
+    loadRoutes();
+    loadPjp();
+  </script>
+</body>
+</html>

@@ -88,10 +88,12 @@
     }
 
     .nav-item {
+      display: block;
       padding: 10px 12px;
       border-radius: 12px;
       color: var(--muted);
       font-weight: 500;
+      text-decoration: none;
     }
 
     .nav-item.active {
@@ -259,12 +261,12 @@
         </div>
       </div>
       <ul class="nav-list">
-        <li class="nav-item">Dashboard</li>
-        <li class="nav-item">Daily Sales</li>
-        <li class="nav-item active">Outlets</li>
-        <li class="nav-item">Products</li>
-        <li class="nav-item">Routes &amp; PJP</li>
-        <li class="nav-item">Reports</li>
+        <li><a class="nav-item" href="/daily-sales">Daily Sales</a></li>
+        <li><a class="nav-item active" href="/outlets">Outlets</a></li>
+        <li><a class="nav-item" href="/master-data">Master Data</a></li>
+        <li><a class="nav-item" href="/imports">Import Hub</a></li>
+        <li><a class="nav-item" href="/quality">Data Quality</a></li>
+        <li><a class="nav-item" href="/reports">Reports</a></li>
       </ul>
     </aside>
 

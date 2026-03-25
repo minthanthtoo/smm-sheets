@@ -27,3 +27,17 @@ def reports_page():
 def outlets_page():
     return FileResponse(STATIC_DIR / "outlets.html")
 
+
+@router.get("/imports")
+def imports_page():
+    return FileResponse(STATIC_DIR / "imports.html")
+
+
+@router.get("/master-data")
+def master_data_page():
+    return FileResponse(STATIC_DIR / "master_data.html")
+
+
+@router.get("/quality")
+def quality_page():
+    return FileResponse(STATIC_DIR / "quality.html")

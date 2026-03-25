@@ -26,6 +26,9 @@ Open:
 - http://127.0.0.1:8000/daily-sales
 - http://127.0.0.1:8000/outlets
 - http://127.0.0.1:8000/reports
+- http://127.0.0.1:8000/imports
+- http://127.0.0.1:8000/master-data
+- http://127.0.0.1:8000/quality
 
 ## Excel Regeneration (from DB)
 
@@ -42,6 +45,7 @@ The Reports dashboard includes **Export Excel**, which regenerates Excel files u
 - `SMM_DB` : SQLite DB path (default `db/app.db`)
 - `SMM_STATIC_DIR` : static assets path (default `app/static`)
 - `SMM_EXPORT_ROOT` : export folder for ZIPs (default `out/exports`)
+- `SMM_IMPORT_ROOT` : import upload folder (default `out/imports`)
 
 ## Project Structure
 
@@ -61,3 +65,21 @@ source/           # Excel templates (by region)
 - Use `SMM_DB` to point at production DB.
 - Ensure `source/<REGION>` templates are present for Excel regeneration.
 - Exports are stored under `out/exports/` for auditability.
+
+## Render Deployment
+
+This repo includes `render.yaml` for one‑click deployment. It provisions a persistent disk at `/var/data` and stores the SQLite DB + exports there.
+
+Behavior:
+- On boot, the app runs `scripts/db_init.py` against `/var/data/app.db` (safe to re-run).
+- Uvicorn serves the app on `$PORT` as required by Render.
+
+If you use Render, commit `render.yaml` and connect the repo as a Blueprint.
+
+## Workflow Coverage
+
+The app now includes:
+- Import Hub for Excel ingestion
+- Master Data screens (Products, Townships, Routes, PJP) with history inserts
+- Data Quality desk for fixing missing fields
+- Reports dashboard with Excel regeneration + export history

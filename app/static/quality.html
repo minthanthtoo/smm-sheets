@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMM Data Quality Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Noto+Serif+Myanmar:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-0: #fff6ec;
+      --bg-1: #f9efe1;
+      --ink: #122023;
+      --muted: #516266;
+      --primary: #0f4c5c;
+      --accent: #f2a900;
+      --surface: #fffdf9;
+      --surface-2: #fff8f0;
+      --border: #e8dcca;
+      --shadow: 0 20px 40px rgba(15, 76, 92, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 700px at 80% -10%, #ffe9c9, transparent 60%),
+                  radial-gradient(900px 600px at 0% 0%, #e7f4f2, transparent 55%),
+                  linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      min-height: 100vh;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 20px;
+      padding: 22px 24px 80px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .nav {
+      padding: 18px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0f4c5c, #1d7a84);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+
+    .nav h1 { font-size: 18px; margin: 0; }
+    .nav small { color: var(--muted); }
+
+    .nav-list {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav-item {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      background: var(--surface-2);
+      color: var(--primary);
+      border: 1px solid #e9c78a;
+    }
+
+    .main { display: grid; gap: 18px; }
+
+    .topbar {
+      padding: 18px 22px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .title { font-size: 24px; font-weight: 700; margin: 0; }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--primary);
+      border-color: #d7c2a4;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .nav { position: static; }
+      .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .controls { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="nav panel">
+      <div class="brand">
+        <div class="brand-badge">SMM</div>
+        <div>
+          <h1>Sales Ops</h1>
+          <small>Quality Desk</small>
+        </div>
+      </div>
+      <ul class="nav-list">
+        <li><a class="nav-item" href="/daily-sales">Daily Sales</a></li>
+        <li><a class="nav-item" href="/outlets">Outlets</a></li>
+        <li><a class="nav-item" href="/master-data">Master Data</a></li>
+        <li><a class="nav-item" href="/imports">Import Hub</a></li>
+        <li><a class="nav-item active" href="/quality">Data Quality</a></li>
+        <li><a class="nav-item" href="/reports">Reports</a></li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <section class="topbar panel">
+        <div>
+          <h2 class="title">Data Quality Desk</h2>
+          <div class="meta">Fix missing outlet, product, route, date, or liter</div>
+        </div>
+        <div class="controls">
+          <label class="field">Start Date <input id="q-start" type="date" /></label>
+          <label class="field">End Date <input id="q-end" type="date" /></label>
+          <label class="field">Issue Type
+            <select id="q-kind">
+              <option value="missing_outlet">Missing Outlet</option>
+              <option value="missing_product">Missing Product</option>
+              <option value="missing_route">Missing Route</option>
+              <option value="missing_date">Missing Date</option>
+              <option value="missing_liter">Missing Liter</option>
+            </select>
+          </label>
+          <label class="field">Limit <input id="q-limit" value="200" /></label>
+          <label class="field"><span>&nbsp;</span><button id="q-load" class="btn" type="button">Load Issues</button></label>
+        </div>
+      </section>
+
+      <section class="panel" style="padding: 16px;">
+        <div class="grid-2">
+          <div>
+            <h3 style="margin:0 0 10px;">Issue Rows</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Txn</th>
+                  <th>Date</th>
+                  <th>Outlet</th>
+                  <th>Product</th>
+                  <th>Route</th>
+                </tr>
+              </thead>
+              <tbody id="issue-body"></tbody>
+            </table>
+          </div>
+          <div>
+            <h3 style="margin:0 0 10px;">Fix Selected</h3>
+            <div class="controls" style="grid-template-columns: 1fr;">
+              <label class="field">Txn ID <input id="fix-txn" /></label>
+              <label class="field">Outlet ID <input id="fix-outlet" /></label>
+              <label class="field">Product ID <input id="fix-product" /></label>
+              <label class="field">Route ID <input id="fix-route" /></label>
+              <label class="field">Date <input id="fix-date" type="date" /></label>
+              <label class="field">Qty Liter <input id="fix-liter" /></label>
+              <label class="field"><span>&nbsp;</span><button id="fix-btn" class="btn" type="button">Apply Fix</button></label>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const issueBody = document.getElementById('issue-body');
+
+    function today() {
+      const d = new Date();
+      return d.toISOString().slice(0, 10);
+    }
+
+    async function loadIssues() {
+      const start = document.getElementById('q-start').value;
+      const end = document.getElementById('q-end').value;
+      const kind = document.getElementById('q-kind').value;
+      const limit = document.getElementById('q-limit').value || '200';
+      const url = `/api/quality/issues?kind=${kind}&start=${start}&end=${end}&limit=${limit}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      issueBody.innerHTML = '';
+      (data.rows || []).forEach((row) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.txn_id}</td>
+          <td>${row.date || ''}</td>
+          <td>${row.outlet_name_raw || row.outlet_id || ''}</td>
+          <td>${row.stock_name_raw || row.product_id || ''}</td>
+          <td>${row.route_id || ''}</td>
+        `;
+        tr.addEventListener('click', () => {
+          document.getElementById('fix-txn').value = row.txn_id;
+          document.getElementById('fix-date').value = row.date || '';
+        });
+        issueBody.appendChild(tr);
+      });
+    }
+
+    async function applyFix() {
+      const payload = {
+        txn_id: document.getElementById('fix-txn').value,
+        outlet_id: document.getElementById('fix-outlet').value,
+        product_id: document.getElementById('fix-product').value,
+        route_id: document.getElementById('fix-route').value,
+        date: document.getElementById('fix-date').value,
+        qty_liter: document.getElementById('fix-liter').value,
+      };
+      const res = await fetch('/api/quality/fix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        alert(await res.text());
+        return;
+      }
+      await loadIssues();
+    }
+
+    document.getElementById('q-start').value = today();
+    document.getElementById('q-end').value = today();
+    document.getElementById('q-load').addEventListener('click', loadIssues);
+    document.getElementById('fix-btn').addEventListener('click', applyFix);
+    loadIssues();
+  </script>
+</body>
+</html>

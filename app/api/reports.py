@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 import uuid
+from pathlib import Path
 from typing import Any, List
 
 from fastapi import APIRouter, HTTPException, Request
@@ -240,3 +241,25 @@ def export_history(limit: int = 25):
         return JSONResponse({"rows": [row_to_dict(r) for r in rows]})
     finally:
         conn.close()
+
+
+@router.get("/reports/export_download")
+def export_download(export_id: str):
+    conn = get_conn()
+    try:
+        ensure_export_table(conn)
+        row = conn.execute(
+            "SELECT file_path FROM export_jobs WHERE export_id = ?",
+            (export_id,),
+        ).fetchone()
+        if not row or not row["file_path"]:
+            raise HTTPException(status_code=404, detail="Export file not found")
+        file_path = Path(row["file_path"]).resolve()
+    finally:
+        conn.close()
+
+    export_root = prepare_export_dir().resolve()
+    if export_root not in file_path.parents:
+        raise HTTPException(status_code=400, detail="Invalid export file path")
+
+    return FileResponse(file_path, media_type="application/zip", filename=file_path.name)

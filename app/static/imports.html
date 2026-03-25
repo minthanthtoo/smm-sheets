@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMM Import Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Noto+Serif+Myanmar:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-0: #fff6ec;
+      --bg-1: #f9efe1;
+      --ink: #122023;
+      --muted: #516266;
+      --primary: #0f4c5c;
+      --accent: #f2a900;
+      --surface: #fffdf9;
+      --surface-2: #fff8f0;
+      --border: #e8dcca;
+      --shadow: 0 20px 40px rgba(15, 76, 92, 0.08);
+      --radius: 18px;
+      --good: #2e8b57;
+      --bad: #b23a48;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 700px at 80% -10%, #ffe9c9, transparent 60%),
+                  radial-gradient(900px 600px at 0% 0%, #e7f4f2, transparent 55%),
+                  linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      min-height: 100vh;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 20px;
+      padding: 22px 24px 80px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .nav {
+      padding: 18px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0f4c5c, #1d7a84);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+
+    .nav h1 { font-size: 18px; margin: 0; }
+    .nav small { color: var(--muted); }
+
+    .nav-list {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav-item {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      background: var(--surface-2);
+      color: var(--primary);
+      border: 1px solid #e9c78a;
+    }
+
+    .main { display: grid; gap: 18px; }
+
+    .topbar {
+      padding: 18px 22px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .topbar-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title { font-size: 24px; font-weight: 700; margin: 0; }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--primary);
+      border-color: #d7c2a4;
+    }
+
+    .btn[disabled] { opacity: 0.6; cursor: wait; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+
+    .status { font-weight: 600; }
+    .status.running { color: var(--accent); }
+    .status.success { color: var(--good); }
+    .status.failed { color: var(--bad); }
+
+    @media (max-width: 1000px) {
+      .app { grid-template-columns: 1fr; }
+      .nav { position: static; }
+      .controls { grid-template-columns: 1fr; }
+      .topbar-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="nav panel">
+      <div class="brand">
+        <div class="brand-badge">SMM</div>
+        <div>
+          <h1>Sales Ops</h1>
+          <small>All Regions</small>
+        </div>
+      </div>
+      <ul class="nav-list">
+        <li><a class="nav-item" href="/daily-sales">Daily Sales</a></li>
+        <li><a class="nav-item" href="/outlets">Outlets</a></li>
+        <li><a class="nav-item" href="/master-data">Master Data</a></li>
+        <li><a class="nav-item active" href="/imports">Import Hub</a></li>
+        <li><a class="nav-item" href="/quality">Data Quality</a></li>
+        <li><a class="nav-item" href="/reports">Reports</a></li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <section class="topbar panel">
+        <div class="topbar-row">
+          <div>
+            <h2 class="title">Import Hub</h2>
+            <div class="meta">
+              <span>Upload Excel sources and run migration</span>
+              <span class="myanmar">စာရင်းဖိုင်များ တင်သွင်းခြင်း</span>
+            </div>
+          </div>
+          <div>
+            <button id="import-btn" class="btn">Run Import</button>
+          </div>
+        </div>
+        <div class="controls">
+          <label class="field">
+            Region
+            <select id="region-select">
+              <option value="">All Regions</option>
+            </select>
+          </label>
+          <label class="field">
+            Excel Files
+            <input id="file-input" type="file" multiple />
+          </label>
+          <label class="field">
+            Refresh Jobs
+            <button id="refresh-btn" class="btn ghost" type="button">Refresh</button>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel" style="padding: 16px;">
+        <h3 style="margin:0 0 12px;">Recent Imports</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Region</th>
+              <th>Status</th>
+              <th>Requested</th>
+              <th>Completed</th>
+              <th>Files</th>
+              <th>Error</th>
+            </tr>
+          </thead>
+          <tbody id="imports-body"></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const importsBody = document.getElementById('imports-body');
+    const importBtn = document.getElementById('import-btn');
+    const refreshBtn = document.getElementById('refresh-btn');
+    const regionSelect = document.getElementById('region-select');
+    const fileInput = document.getElementById('file-input');
+
+    async function loadRegions() {
+      try {
+        const res = await fetch('/api/regions');
+        const data = await res.json();
+        regionSelect.innerHTML = '<option value="">All Regions</option>';
+        (data.regions || []).forEach((r) => {
+          const opt = document.createElement('option');
+          opt.value = r;
+          opt.textContent = r;
+          regionSelect.appendChild(opt);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function formatDate(val) {
+      if (!val) return '-';
+      return val.replace('T', ' ').slice(0, 19);
+    }
+
+    async function loadImports() {
+      const res = await fetch('/api/imports?limit=25');
+      const data = await res.json();
+      importsBody.innerHTML = '';
+      (data.rows || []).forEach((row) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.import_id}</td>
+          <td>${row.region || 'ALL'}</td>
+          <td class="status ${row.status}">${row.status}</td>
+          <td>${formatDate(row.requested_at)}</td>
+          <td>${formatDate(row.completed_at)}</td>
+          <td>${(row.file_names || []).join(', ')}</td>
+          <td>${row.error_message || ''}</td>
+        `;
+        importsBody.appendChild(tr);
+      });
+    }
+
+    async function runImport() {
+      const files = fileInput.files;
+      if (!files || files.length === 0) {
+        alert('Please choose files');
+        return;
+      }
+      importBtn.disabled = true;
+      importBtn.textContent = 'Uploading...';
+      try {
+        const form = new FormData();
+        Array.from(files).forEach((f) => form.append('files', f));
+        if (regionSelect.value) {
+          form.append('region', regionSelect.value);
+        }
+        const res = await fetch('/api/imports', { method: 'POST', body: form });
+        if (!res.ok) {
+          const msg = await res.text();
+          throw new Error(msg || 'Import failed');
+        }
+        await loadImports();
+        fileInput.value = '';
+      } catch (err) {
+        alert(err.message || 'Import failed');
+      } finally {
+        importBtn.disabled = false;
+        importBtn.textContent = 'Run Import';
+      }
+    }
+
+    refreshBtn.addEventListener('click', loadImports);
+    importBtn.addEventListener('click', runImport);
+
+    loadRegions();
+    loadImports();
+  </script>
+</body>
+</html>

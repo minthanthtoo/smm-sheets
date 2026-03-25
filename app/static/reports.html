@@ -88,10 +88,12 @@
     }
 
     .nav-item {
+      display: block;
       padding: 10px 12px;
       border-radius: 12px;
       color: var(--muted);
       font-weight: 500;
+      text-decoration: none;
     }
 
     .nav-item.active {
@@ -235,12 +237,12 @@
         </div>
       </div>
       <ul class="nav-list">
-        <li class="nav-item">Dashboard</li>
-        <li class="nav-item">Daily Sales</li>
-        <li class="nav-item">Outlets</li>
-        <li class="nav-item">Products</li>
-        <li class="nav-item">Routes &amp; PJP</li>
-        <li class="nav-item active">Reports</li>
+        <li><a class="nav-item" href="/daily-sales">Daily Sales</a></li>
+        <li><a class="nav-item" href="/outlets">Outlets</a></li>
+        <li><a class="nav-item" href="/master-data">Master Data</a></li>
+        <li><a class="nav-item" href="/imports">Import Hub</a></li>
+        <li><a class="nav-item" href="/quality">Data Quality</a></li>
+        <li><a class="nav-item active" href="/reports">Reports</a></li>
       </ul>
     </aside>
 
@@ -342,6 +344,26 @@
           </div>
         </div>
       </section>
+
+      <section class="panel" style="padding: 16px;">
+        <div class="topbar-row" style="margin-bottom: 10px;">
+          <h3 style="margin:0;">Export History</h3>
+          <button id="export-history-refresh" class="btn ghost" type="button">Refresh</button>
+        </div>
+        <table style="width:100%; border-collapse: collapse; font-size:14px;">
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">ID</th>
+              <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Region</th>
+              <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Status</th>
+              <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Requested</th>
+              <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Completed</th>
+              <th style="text-align:left; padding:8px; border-bottom:1px solid var(--border);">Download</th>
+            </tr>
+          </thead>
+          <tbody id="export-history-body"></tbody>
+        </table>
+      </section>
     </main>
   </div>
 
@@ -352,6 +374,8 @@
     const exportLink = document.getElementById('export-link');
     const exportExcelBtn = document.getElementById('export-excel');
     const regionSelect = document.getElementById('region-select');
+    const exportHistoryBody = document.getElementById('export-history-body');
+    const exportHistoryRefresh = document.getElementById('export-history-refresh');
 
     function today() {
       const d = new Date();
@@ -383,6 +407,32 @@
       document.getElementById('q-missing-date').textContent = Number(data.missing_date || 0).toFixed(0);
       document.getElementById('q-missing-liter').textContent = Number(data.missing_liter || 0).toFixed(0);
       document.getElementById('q-missing-route').textContent = Number(data.missing_route || 0).toFixed(0);
+    }
+
+    function formatDate(val) {
+      if (!val) return '-';
+      return val.replace('T', ' ').slice(0, 19);
+    }
+
+    async function loadExportHistory() {
+      const res = await fetch('/api/reports/export_history?limit=20');
+      const data = await res.json();
+      exportHistoryBody.innerHTML = '';
+      (data.rows || []).forEach((row) => {
+        const tr = document.createElement('tr');
+        const download = row.status === 'success'
+          ? `<a class="btn ghost" href="/api/reports/export_download?export_id=${row.export_id}">Download</a>`
+          : '';
+        tr.innerHTML = `
+          <td style="padding:8px; border-bottom:1px solid var(--border);">${row.export_id}</td>
+          <td style="padding:8px; border-bottom:1px solid var(--border);">${row.region || 'ALL'}</td>
+          <td style="padding:8px; border-bottom:1px solid var(--border);">${row.status}</td>
+          <td style="padding:8px; border-bottom:1px solid var(--border);">${formatDate(row.requested_at)}</td>
+          <td style="padding:8px; border-bottom:1px solid var(--border);">${formatDate(row.completed_at)}</td>
+          <td style="padding:8px; border-bottom:1px solid var(--border);">${download}</td>
+        `;
+        exportHistoryBody.appendChild(tr);
+      });
     }
 
     async function loadRegions() {
@@ -427,6 +477,7 @@
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url);
+        loadExportHistory();
       } catch (err) {
         alert(err.message || 'Export failed');
       } finally {
@@ -440,9 +491,11 @@
     loadSummary();
     loadQuality();
     loadRegions();
+    loadExportHistory();
     startEl.addEventListener('change', () => { loadSummary(); loadQuality(); });
     endEl.addEventListener('change', () => { loadSummary(); loadQuality(); });
     exportExcelBtn.addEventListener('click', exportExcel);
+    exportHistoryRefresh.addEventListener('click', loadExportHistory);
   </script>
 </body>
 </html>
