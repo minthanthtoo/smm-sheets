@@ -17,6 +17,7 @@ def is_postgres(dsn: str) -> bool:
 
 
 def resolve_db_target(root: Path, db_arg: str) -> str:
+    db_arg = db_arg.strip()
     if is_postgres(db_arg):
         return db_arg
     return str((root / db_arg).resolve())
@@ -62,4 +63,3 @@ def get_conn(dsn_or_path: str) -> DBConn:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return DBConn(conn, "sqlite")
-
