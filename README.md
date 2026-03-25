@@ -68,10 +68,10 @@ source/           # Excel templates (by region)
 
 ## Render Deployment
 
-This repo includes `render.yaml` for one‑click deployment. It provisions a persistent disk at `/var/data` and stores the SQLite DB + exports there.
+This repo includes `render.yaml` for one‑click deployment. On the free tier, it uses `/tmp` (ephemeral). For persistence, upgrade and mount a disk.
 
 Behavior:
-- On boot, the app runs `scripts/db_init.py` against `/var/data/app.db` (safe to re-run).
+- On boot, the app runs `scripts/db_init.py` against the path in `SMM_DB` (safe to re-run).
 - Uvicorn serves the app on `$PORT` as required by Render.
 
 If you use Render, commit `render.yaml` and connect the repo as a Blueprint.

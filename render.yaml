@@ -7,14 +7,11 @@ services:
     autoDeploy: true
     envVars:
       - key: SMM_DB
-        value: /opt/render/project/data/app.db
+        value: /tmp/app.db
       - key: SMM_EXPORT_ROOT
-        value: /opt/render/project/data/exports
+        value: /tmp/exports
       - key: SMM_IMPORT_ROOT
-        value: /opt/render/project/data/imports
+        value: /tmp/imports
       - key: PYTHON_VERSION
         value: 3.12.3
-    disk:
-      name: smm-data
-      mountPath: /opt/render/project/data
-      sizeGB: 1
+    # Free tier note: persistent disks are unavailable, so we default to /tmp (ephemeral).
