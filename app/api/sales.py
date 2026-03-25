@@ -98,7 +98,7 @@ async def create_sales(request: Request):
                   sale_type_raw, sale_class_raw, participation_raw, parking_fee,
                   source_file, source_sheet, source_row
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (txn_id) DO NOTHING
+                ON CONFLICT (txn_hash) DO NOTHING
                 """,
                 (
                     txn_id,

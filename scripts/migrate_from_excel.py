@@ -28,6 +28,17 @@ def iso_date(value) -> str:
     return str(value)
 
 
+def normalize_value(value):
+    if value is None:
+        return None
+    if hasattr(value, "isoformat"):
+        try:
+            return value.isoformat()
+        except Exception:
+            return str(value)
+    return value
+
+
 def today_iso() -> str:
     return dt.date.today().isoformat()
 
@@ -255,6 +266,46 @@ def migrate(in_dir: Path, db_target: str, region_filter: str | None) -> None:
         for s in sales_rows:
             txn_hash = s.get("txn_hash")
             txn_id = s.get("txn_id") or (f"txn_{txn_hash}" if txn_hash else f"txn_{uuid.uuid4().hex}")
+            values = (
+                txn_id,
+                s.get("txn_key"),
+                txn_hash,
+                s.get("day_key"),
+                s.get("outlet_key"),
+                s.get("trader_key"),
+                iso_date(s.get("date")),
+                s.get("year"),
+                s.get("month"),
+                s.get("day"),
+                s.get("day_label"),
+                s.get("period"),
+                s.get("outlet_id") or None,
+                None,
+                s.get("customer_id_raw"),
+                s.get("outlet_name_raw"),
+                s.get("township_name_raw"),
+                s.get("address_raw"),
+                s.get("product_id") or None,
+                s.get("stock_id_raw"),
+                s.get("stock_name_raw"),
+                s.get("ml_raw"),
+                s.get("packing_raw"),
+                s.get("channel"),
+                s.get("voucher_no"),
+                s.get("car_no"),
+                s.get("qty_pack"),
+                s.get("qty_bottle"),
+                s.get("qty_liter"),
+                s.get("sale_type_raw"),
+                s.get("sale_class_raw"),
+                s.get("participation_raw"),
+                s.get("parking_fee"),
+                s.get("source_file"),
+                s.get("source_sheet"),
+                s.get("source_row"),
+            )
+            values = tuple(normalize_value(v) for v in values)
+
             conn.execute(
                 """
                 INSERT INTO sales_transactions (
@@ -267,46 +318,9 @@ def migrate(in_dir: Path, db_target: str, region_filter: str | None) -> None:
                   sale_type_raw, sale_class_raw, participation_raw, parking_fee,
                   source_file, source_sheet, source_row
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT (txn_id) DO NOTHING
+                ON CONFLICT (txn_hash) DO NOTHING
                 """,
-                (
-                    txn_id,
-                    s.get("txn_key"),
-                    txn_hash,
-                    s.get("day_key"),
-                    s.get("outlet_key"),
-                    s.get("trader_key"),
-                    iso_date(s.get("date")),
-                    s.get("year"),
-                    s.get("month"),
-                    s.get("day"),
-                    s.get("day_label"),
-                    s.get("period"),
-                    s.get("outlet_id"),
-                    None,
-                    s.get("customer_id_raw"),
-                    s.get("outlet_name_raw"),
-                    s.get("township_name_raw"),
-                    s.get("address_raw"),
-                    s.get("product_id"),
-                    s.get("stock_id_raw"),
-                    s.get("stock_name_raw"),
-                    s.get("ml_raw"),
-                    s.get("packing_raw"),
-                    s.get("channel"),
-                    s.get("voucher_no"),
-                    s.get("car_no"),
-                    s.get("qty_pack"),
-                    s.get("qty_bottle"),
-                    s.get("qty_liter"),
-                    s.get("sale_type_raw"),
-                    s.get("sale_class_raw"),
-                    s.get("participation_raw"),
-                    s.get("parking_fee"),
-                    s.get("source_file"),
-                    s.get("source_sheet"),
-                    s.get("source_row"),
-                ),
+                values,
             )
 
         # financials
