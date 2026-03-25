@@ -132,6 +132,72 @@
       gap: 10px;
     }
 
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .info-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: grid;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #fff1d6;
+      color: #7a4b00;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid #f2d4a3;
+    }
+
+    .info-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      display: grid;
+      gap: 6px;
+    }
+
+    details.import-details {
+      border: 1px dashed #e2d2bb;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: #fffaf2;
+      color: var(--muted);
+    }
+
+    details.import-details summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .header-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .header-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
     .field {
       display: grid;
       gap: 6px;
@@ -195,6 +261,8 @@
       .app { grid-template-columns: 1fr; }
       .nav { position: static; }
       .controls { grid-template-columns: 1fr; }
+      .info-grid { grid-template-columns: 1fr; }
+      .header-grid { grid-template-columns: 1fr; }
       .topbar-row { grid-template-columns: 1fr; }
     }
   </style>
@@ -248,6 +316,75 @@
             Refresh Jobs
             <button id="refresh-btn" class="btn ghost" type="button">Refresh</button>
           </label>
+        </div>
+      </section>
+
+      <section class="panel" style="padding: 16px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+          <h3 style="margin:0;">Import Guide</h3>
+          <span class="pill">Accepted: .xlsx · .xlsm</span>
+        </div>
+        <div class="info-grid" style="margin-top:12px;">
+          <div class="info-card">
+            <strong>File Types</strong>
+            <ul class="info-list">
+              <li>Only `.xlsx` and `.xlsm` files are processed.</li>
+              <li>Multiple files can be uploaded in one run.</li>
+              <li>`.xls` and `.csv` are not supported.</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <strong>Sheet Names</strong>
+            <ul class="info-list">
+              <li>Table: sheet name starts with "Table".</li>
+              <li>Daily Sales: starts with "DailySales".</li>
+              <li>Outlet List: contains "OutletList".</li>
+              <li>Way Plan: contains "WayPlan" or "WayPlay".</li>
+              <li>PJP Outlets: contains both "PJP" and "Outlet".</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <strong>Region From Filename</strong>
+            <ul class="info-list">
+              <li>LSH: `lsh` or `lashio` in filename</li>
+              <li>LSO: `lso` in filename</li>
+              <li>KT: `kt` or `keng tung` in filename</li>
+              <li>MLM: `mlm` or `mawlamyaing` in filename</li>
+              <li>MTL: `mtl`, `meiktila`, or `mhl` in filename</li>
+              <li>YGN: `ygn` or `yangon` in filename</li>
+              <li>Otherwise: `UNK`</li>
+            </ul>
+          </div>
+        </div>
+
+        <details class="import-details" style="margin-top:12px;">
+          <summary>Header requirements (what the parser looks for)</summary>
+          <div class="header-grid">
+            <div class="header-card">
+              <strong>Table sheet</strong>
+              <div style="margin-top:6px;">Product headers: `stock id`, `particular`, `ml`, `qty`, `column1`, `sales price`</div>
+              <div style="margin-top:6px;">Outlet headers: `no`, `ကုန်သည်`/`ဆိုင်အမည်`, `လိပ်စာ`, `township`, `sales`/`wholesales`, `way`/`car no`, `pg name`</div>
+            </div>
+            <div class="header-card">
+              <strong>DailySales sheet</strong>
+              <div style="margin-top:6px;">Core: `year`, `month`, `date`, `today`, `period`, `voucherno`, `carno`, `customerid`</div>
+              <div style="margin-top:6px;">Outlet/Product: `ကုန်သည်အမည်`, `township`, `လိပ်စာ`, `stockid`/`stock name`, `ml`</div>
+              <div style="margin-top:6px;">Qty/Finance: `salespk`, `salesbot`, `liter`, `parking`, `နှုံး`, `သင့်ငွေ`, `ကော်မရှင်`</div>
+            </div>
+            <div class="header-card">
+              <strong>Outlet List sheet</strong>
+              <div style="margin-top:6px;">Headers: `sr`/`no`/`စဉ်`, `ကုန်သည်`/`ဆိုင်အမည်`, `township`, `type`, `way`, `ဖုန်းနံပါတ်`, `agent`, `ဘယ်သူ့ outletလဲ`, `ရင်းနှီးမှု`</div>
+            </div>
+            <div class="header-card">
+              <strong>Way Plan / PJP Outlets</strong>
+              <div style="margin-top:6px;">Way Plan: `date`, `day`, `way`, `actual way name`/`route name`, `a`, `b`, `c`, `d`, `s`, `total`</div>
+              <div style="margin-top:6px;">PJP Outlets uses Outlet List headers and looks for "route/way" near the top.</div>
+            </div>
+          </div>
+        </details>
+
+        <div style="margin-top:10px; color: var(--muted); font-size: 12px;">
+          Tip: Save spreadsheets with values (data-only). If a header row can't be detected, that sheet is skipped.
         </div>
       </section>
 
