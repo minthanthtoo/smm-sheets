@@ -22,6 +22,17 @@ def main() -> None:
 
     conn = get_conn(db_target)
     try:
+        if conn.flavor == "postgres":
+            try:
+                conn.execute(
+                    "ALTER TABLE sales_transactions ADD CONSTRAINT ux_sales_transactions_txn_hash UNIQUE (txn_hash)"
+                )
+                conn.commit()
+            except Exception:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
         conn.executescript(schema_sql)
         conn.commit()
     finally:
