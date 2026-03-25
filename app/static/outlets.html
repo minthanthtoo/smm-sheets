@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMM Outlet Master</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Noto+Serif+Myanmar:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-0: #fff6ec;
+      --bg-1: #f9efe1;
+      --ink: #122023;
+      --muted: #516266;
+      --primary: #0f4c5c;
+      --accent: #f2a900;
+      --accent-2: #f4d35e;
+      --good: #2e8b57;
+      --bad: #b23a48;
+      --surface: #fffdf9;
+      --surface-2: #fff8f0;
+      --border: #e8dcca;
+      --shadow: 0 20px 40px rgba(15, 76, 92, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 700px at 80% -10%, #ffe9c9, transparent 60%),
+                  radial-gradient(900px 600px at 0% 0%, #e7f4f2, transparent 55%),
+                  linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      min-height: 100vh;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 240px 320px 1fr;
+      gap: 20px;
+      padding: 22px 24px 80px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .nav {
+      padding: 18px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0f4c5c, #1d7a84);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+
+    .nav h1 { font-size: 18px; margin: 0; }
+    .nav small { color: var(--muted); }
+
+    .nav-list {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav-item {
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .nav-item.active {
+      background: var(--surface-2);
+      color: var(--primary);
+      border: 1px solid #e9c78a;
+    }
+
+    .list-panel {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .search {
+      display: grid;
+      gap: 6px;
+    }
+
+    .search input {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .list {
+      display: grid;
+      gap: 8px;
+      max-height: 65vh;
+      overflow: auto;
+    }
+
+    .dedupe-list {
+      display: grid;
+      gap: 8px;
+      max-height: 32vh;
+      overflow: auto;
+      border-top: 1px dashed var(--border);
+      padding-top: 10px;
+    }
+
+    .dup-item {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid #f0cf92;
+      background: #fff4da;
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .list-item {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      display: grid;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .list-item.active {
+      border-color: #f0cf92;
+      background: #fff7e6;
+    }
+
+    .main { display: grid; gap: 18px; }
+
+    .header {
+      padding: 18px 20px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .meta { color: var(--muted); font-size: 14px; }
+
+    .detail {
+      padding: 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .history {
+      padding: 16px;
+      display: grid;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .history-item {
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      background: #fff9ef;
+      color: var(--ink);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .field input, .field select, .field textarea {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+    }
+
+    .field textarea { min-height: 72px; resize: vertical; }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn.primary { background: var(--primary); color: #fff; }
+    .btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+
+    .myanmar { font-family: "Noto Serif Myanmar", serif; }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .nav { position: static; }
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="nav panel">
+      <div class="brand">
+        <div class="brand-badge">SMM</div>
+        <div>
+          <h1>Sales Ops</h1>
+          <small>MTL Region</small>
+        </div>
+      </div>
+      <ul class="nav-list">
+        <li class="nav-item">Dashboard</li>
+        <li class="nav-item">Daily Sales</li>
+        <li class="nav-item active">Outlets</li>
+        <li class="nav-item">Products</li>
+        <li class="nav-item">Routes &amp; PJP</li>
+        <li class="nav-item">Reports</li>
+      </ul>
+    </aside>
+
+    <section class="panel list-panel">
+      <div class="search">
+        <label for="search" style="font-size:12px;color:var(--muted);">Search outlets</label>
+        <input id="search" type="text" placeholder="Name, phone, township" />
+      </div>
+      <div class="list" id="outlet-list"></div>
+      <div>
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Potential Duplicates</div>
+        <div class="dedupe-list" id="dedupe-list"></div>
+      </div>
+    </section>
+
+    <main class="main">
+      <section class="panel header">
+        <h2 class="title">Outlet Master</h2>
+        <div class="meta">Manage outlets, update type/route with effective dates.</div>
+      </section>
+
+      <section class="panel detail">
+        <div class="detail-grid">
+          <label class="field">
+            Outlet Name (MM)
+            <input id="name-mm" class="myanmar" type="text" />
+          </label>
+          <label class="field">
+            Outlet Name (EN)
+            <input id="name-en" type="text" />
+          </label>
+          <label class="field">
+            Type
+            <select id="type">
+              <option>WS</option>
+              <option>SWS</option>
+              <option>Van</option>
+            </select>
+          </label>
+          <label class="field">
+            Phone
+            <input id="phone" type="text" />
+          </label>
+          <label class="field" style="grid-column: span 2;">
+            Address
+            <textarea id="address"></textarea>
+          </label>
+          <label class="field">
+            Effective From
+            <input id="effective-from" type="date" />
+          </label>
+        </div>
+        <div class="actions">
+          <button class="btn ghost" id="refresh">Refresh</button>
+          <button class="btn primary" id="save">Save Outlet</button>
+        </div>
+      </section>
+
+      <section class="panel history">
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.06em;">Outlet History</div>
+        <div id="history-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const listEl = document.getElementById('outlet-list');
+    const searchEl = document.getElementById('search');
+    const nameMm = document.getElementById('name-mm');
+    const nameEn = document.getElementById('name-en');
+    const typeEl = document.getElementById('type');
+    const phoneEl = document.getElementById('phone');
+    const addressEl = document.getElementById('address');
+    const effectiveFrom = document.getElementById('effective-from');
+    const historyList = document.getElementById('history-list');
+    const dedupeList = document.getElementById('dedupe-list');
+
+    let outlets = [];
+    let active = null;
+
+    function today() {
+      const d = new Date();
+      return d.toISOString().slice(0, 10);
+    }
+
+    function renderList() {
+      listEl.innerHTML = '';
+      const query = searchEl.value.toLowerCase();
+      const filtered = outlets.filter((o) => {
+        const text = `${o.outlet_name_mm || ''} ${o.outlet_name_en || ''} ${o.contact_phone || ''}`.toLowerCase();
+        return !query || text.includes(query);
+      });
+
+      filtered.forEach((o) => {
+        const item = document.createElement('div');
+        item.className = `list-item ${active && o.outlet_id === active.outlet_id ? 'active' : ''}`;
+        const name = o.outlet_name_en || o.outlet_name_mm || o.outlet_id;
+        item.innerHTML = `
+          <strong>${name}</strong>
+          <span class="myanmar">${o.outlet_name_mm || ''}</span>
+          <span style="font-size:12px;color:var(--muted);">${o.contact_phone || ''}</span>
+        `;
+        item.addEventListener('click', () => {
+          active = o;
+          fillDetail();
+          renderList();
+        });
+        listEl.appendChild(item);
+      });
+    }
+
+    function fillDetail() {
+      if (!active) return;
+      nameMm.value = active.outlet_name_mm || '';
+      nameEn.value = active.outlet_name_en || '';
+      typeEl.value = active.outlet_type || 'WS';
+      phoneEl.value = active.contact_phone || '';
+      addressEl.value = active.address_full || '';
+      effectiveFrom.value = today();
+      loadHistory(active.outlet_id);
+    }
+
+    async function loadHistory(outletId) {
+      historyList.innerHTML = '';
+      if (!outletId) return;
+      const res = await fetch(`/api/outlets/${outletId}/history`);
+      const data = await res.json();
+      const rows = data.history || [];
+      if (!rows.length) {
+        historyList.innerHTML = '<div style="font-size:12px;color:var(--muted);">No history yet.</div>';
+        return;
+      }
+      rows.slice(0, 5).forEach((h) => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `
+          <div><strong>${h.outlet_name_en || h.outlet_name_mm || ''}</strong></div>
+          <div>Type: ${h.outlet_type || '-'} · Phone: ${h.contact_phone || '-'}</div>
+          <div>Effective: ${h.effective_from || '-'} → ${h.effective_to || 'Current'}</div>
+        `;
+        historyList.appendChild(div);
+      });
+    }
+
+    async function loadOutlets() {
+      const res = await fetch(`/api/outlets`);
+      const data = await res.json();
+      outlets = data.outlets || [];
+      active = outlets[0] || null;
+      renderList();
+      fillDetail();
+    }
+
+    async function loadDedupe() {
+      dedupeList.innerHTML = '';
+      const res = await fetch(`/api/outlets/dedupe`);
+      const data = await res.json();
+      const groups = data.groups || [];
+      if (!groups.length) {
+        dedupeList.innerHTML = '<div style="font-size:12px;color:var(--muted);">No duplicates detected.</div>';
+        return;
+      }
+      groups.forEach((g) => {
+        const items = g.outlets || [];
+        if (items.length < 2) return;
+        const a = items[0];
+        const b = items[1];
+        const item = document.createElement('div');
+        item.className = 'dup-item';
+        item.innerHTML = `
+          <strong>${g.reason.replace('_', ' ')} match</strong>
+          <div>${a.outlet_name_en || a.outlet_name_mm || a.outlet_id} · ${a.contact_phone || ''}</div>
+          <div>${b.outlet_name_en || b.outlet_name_mm || b.outlet_id} · ${b.contact_phone || ''}</div>
+          <button class="btn primary" data-merge>Merge</button>
+        `;
+        item.querySelector('[data-merge]').addEventListener('click', async () => {
+          const ok = confirm('Merge these two outlets? This will move transactions to the first outlet.');
+          if (!ok) return;
+          await fetch(`/api/outlets/merge`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              primary_outlet_id: a.outlet_id,
+              duplicate_outlet_id: b.outlet_id,
+              merge_date: effectiveFrom.value || today()
+            })
+          });
+          loadOutlets();
+          loadDedupe();
+        });
+        dedupeList.appendChild(item);
+      });
+    }
+
+    document.getElementById('save').addEventListener('click', async () => {
+      if (!active) return;
+      const payload = {
+        outlet_id: active.outlet_id,
+        outlet_name_mm: nameMm.value,
+        outlet_name_en: nameEn.value,
+        outlet_type: typeEl.value,
+        contact_phone: phoneEl.value,
+        address_full: addressEl.value,
+        effective_from: effectiveFrom.value
+      };
+      await fetch(`/api/outlets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      loadOutlets();
+    });
+
+    document.getElementById('refresh').addEventListener('click', loadOutlets);
+    searchEl.addEventListener('input', renderList);
+
+    loadOutlets();
+    loadDedupe();
+  </script>
+</body>
+</html>

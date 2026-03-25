@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMM Report Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Noto+Serif+Myanmar:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-0: #fff6ec;
+      --bg-1: #f9efe1;
+      --ink: #122023;
+      --muted: #516266;
+      --primary: #0f4c5c;
+      --accent: #f2a900;
+      --accent-2: #f4d35e;
+      --good: #2e8b57;
+      --bad: #b23a48;
+      --surface: #fffdf9;
+      --surface-2: #fff8f0;
+      --border: #e8dcca;
+      --shadow: 0 20px 40px rgba(15, 76, 92, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 700px at 80% -10%, #ffe9c9, transparent 60%),
+                  radial-gradient(900px 600px at 0% 0%, #e7f4f2, transparent 55%),
+                  linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      min-height: 100vh;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 20px;
+      padding: 22px 24px 80px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .nav {
+      padding: 18px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0f4c5c, #1d7a84);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+
+    .nav h1 { font-size: 18px; margin: 0; }
+    .nav small { color: var(--muted); }
+
+    .nav-list {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav-item {
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .nav-item.active {
+      background: var(--surface-2);
+      color: var(--primary);
+      border: 1px solid #e9c78a;
+    }
+
+    .main { display: grid; gap: 18px; }
+
+    .topbar {
+      padding: 18px 22px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .topbar-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title { font-size: 24px; font-weight: 700; margin: 0; }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .kpi {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px dashed #f0cf92;
+      background: #fff9ef;
+    }
+
+    .kpi h3 {
+      margin: 0 0 6px;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .kpi p {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+      font-family: "Space Mono", ui-monospace, monospace;
+    }
+
+    .myanmar { font-family: "Noto Serif Myanmar", serif; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(15, 76, 92, 0.18); }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--primary);
+      border-color: #d7c2a4;
+      box-shadow: none;
+    }
+
+    .btn[disabled] { opacity: 0.6; cursor: wait; }
+
+    .action-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .nav { position: static; }
+      .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 720px) {
+      .kpis { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="nav panel">
+      <div class="brand">
+        <div class="brand-badge">SMM</div>
+        <div>
+          <h1>Sales Ops</h1>
+          <small>MTL Region</small>
+        </div>
+      </div>
+      <ul class="nav-list">
+        <li class="nav-item">Dashboard</li>
+        <li class="nav-item">Daily Sales</li>
+        <li class="nav-item">Outlets</li>
+        <li class="nav-item">Products</li>
+        <li class="nav-item">Routes &amp; PJP</li>
+        <li class="nav-item active">Reports</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <section class="topbar panel">
+        <div class="topbar-row">
+          <div>
+            <h2 class="title">Report Dashboard</h2>
+            <div class="meta">
+              <span id="range-label">--</span>
+              <span class="myanmar">မိတ်ထီလာ (MTL)</span>
+              <span>Sales Health Overview</span>
+            </div>
+          </div>
+          <div class="action-row">
+            <a id="export-link" class="btn ghost" href="#">Export CSV</a>
+            <button id="export-excel" class="btn">Export Excel</button>
+          </div>
+        </div>
+        <div class="controls">
+          <label class="field">
+            Start Date
+            <input id="start-date" type="date" />
+          </label>
+          <label class="field">
+            End Date
+            <input id="end-date" type="date" />
+          </label>
+          <label class="field">
+            Report Type
+            <select>
+              <option>All Reports</option>
+              <option>Individual Sales</option>
+              <option>SKU Summary</option>
+              <option>Township Summary</option>
+              <option>Van Wise SKU</option>
+            </select>
+          </label>
+          <label class="field">
+            Channel
+            <select>
+              <option>All</option>
+              <option>WS</option>
+              <option>SWS</option>
+              <option>Van</option>
+            </select>
+          </label>
+          <label class="field">
+            Excel Region
+            <select id="region-select">
+              <option value="">ALL</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="panel" style="padding: 16px;">
+        <div class="kpis">
+          <div class="kpi">
+            <h3>Total Packs</h3>
+            <p id="kpi-pack">0</p>
+          </div>
+          <div class="kpi">
+            <h3>Total Bottles</h3>
+            <p id="kpi-bottle">0</p>
+          </div>
+          <div class="kpi">
+            <h3>Total Liters</h3>
+            <p id="kpi-liter">0</p>
+          </div>
+          <div class="kpi">
+            <h3>Active Outlets</h3>
+            <p id="kpi-outlets">0</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" style="padding: 16px;">
+        <div class="kpis">
+          <div class="kpi">
+            <h3>Missing Outlet</h3>
+            <p id="q-missing-outlet">0</p>
+          </div>
+          <div class="kpi">
+            <h3>Missing Product</h3>
+            <p id="q-missing-product">0</p>
+          </div>
+          <div class="kpi">
+            <h3>Missing Date</h3>
+            <p id="q-missing-date">0</p>
+          </div>
+          <div class="kpi">
+            <h3>Missing Liter</h3>
+            <p id="q-missing-liter">0</p>
+          </div>
+          <div class="kpi">
+            <h3>Missing Route</h3>
+            <p id="q-missing-route">0</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const startEl = document.getElementById('start-date');
+    const endEl = document.getElementById('end-date');
+    const rangeLabel = document.getElementById('range-label');
+    const exportLink = document.getElementById('export-link');
+    const exportExcelBtn = document.getElementById('export-excel');
+    const regionSelect = document.getElementById('region-select');
+
+    function today() {
+      const d = new Date();
+      return d.toISOString().slice(0, 10);
+    }
+
+    function setRangeLabel() {
+      rangeLabel.textContent = `${startEl.value} to ${endEl.value}`;
+      exportLink.href = `/api/reports/sales_export?start=${startEl.value}&end=${endEl.value}`;
+    }
+
+    async function loadSummary() {
+      if (!startEl.value || !endEl.value) return;
+      setRangeLabel();
+      const res = await fetch(`/api/reports/summary?start=${startEl.value}&end=${endEl.value}`);
+      const data = await res.json();
+      document.getElementById('kpi-pack').textContent = Number(data.total_pack || 0).toFixed(0);
+      document.getElementById('kpi-bottle').textContent = Number(data.total_bottle || 0).toFixed(0);
+      document.getElementById('kpi-liter').textContent = Number(data.total_liter || 0).toFixed(2);
+      document.getElementById('kpi-outlets').textContent = Number(data.active_outlets || 0).toFixed(0);
+    }
+
+    async function loadQuality() {
+      if (!startEl.value || !endEl.value) return;
+      const res = await fetch(`/api/quality/summary?start=${startEl.value}&end=${endEl.value}`);
+      const data = await res.json();
+      document.getElementById('q-missing-outlet').textContent = Number(data.missing_outlet || 0).toFixed(0);
+      document.getElementById('q-missing-product').textContent = Number(data.missing_product || 0).toFixed(0);
+      document.getElementById('q-missing-date').textContent = Number(data.missing_date || 0).toFixed(0);
+      document.getElementById('q-missing-liter').textContent = Number(data.missing_liter || 0).toFixed(0);
+      document.getElementById('q-missing-route').textContent = Number(data.missing_route || 0).toFixed(0);
+    }
+
+    async function loadRegions() {
+      try {
+        const res = await fetch('/api/regions');
+        const data = await res.json();
+        regionSelect.innerHTML = '<option value="">ALL</option>';
+        (data.regions || []).forEach((r) => {
+          const opt = document.createElement('option');
+          opt.value = r;
+          opt.textContent = r;
+          regionSelect.appendChild(opt);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function exportExcel() {
+      exportExcelBtn.disabled = true;
+      exportExcelBtn.textContent = 'Preparing...';
+      try {
+        const payload = { region: regionSelect.value || null };
+        const res = await fetch('/api/reports/export_excel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const msg = await res.text();
+          throw new Error(msg || 'Export failed');
+        }
+        const blob = await res.blob();
+        const dispo = res.headers.get('content-disposition') || '';
+        const match = dispo.match(/filename="([^"]+)"/);
+        const filename = match ? match[1] : 'excel_export.zip';
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        alert(err.message || 'Export failed');
+      } finally {
+        exportExcelBtn.disabled = false;
+        exportExcelBtn.textContent = 'Export Excel';
+      }
+    }
+
+    startEl.value = today();
+    endEl.value = today();
+    loadSummary();
+    loadQuality();
+    loadRegions();
+    startEl.addEventListener('change', () => { loadSummary(); loadQuality(); });
+    endEl.addEventListener('change', () => { loadSummary(); loadQuality(); });
+    exportExcelBtn.addEventListener('click', exportExcel);
+  </script>
+</body>
+</html>

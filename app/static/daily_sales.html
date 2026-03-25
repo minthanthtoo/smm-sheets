@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMM Daily Sales Entry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Noto+Serif+Myanmar:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-0: #fff6ec;
+      --bg-1: #f9efe1;
+      --ink: #122023;
+      --muted: #516266;
+      --primary: #0f4c5c;
+      --accent: #f2a900;
+      --accent-2: #f4d35e;
+      --good: #2e8b57;
+      --bad: #b23a48;
+      --surface: #fffdf9;
+      --surface-2: #fff8f0;
+      --border: #e8dcca;
+      --shadow: 0 20px 40px rgba(15, 76, 92, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Space Grotesk", system-ui, sans-serif;
+      color: var(--ink);
+      background: radial-gradient(1200px 700px at 80% -10%, #ffe9c9, transparent 60%),
+                  radial-gradient(900px 600px at 0% 0%, #e7f4f2, transparent 55%),
+                  linear-gradient(180deg, var(--bg-0), var(--bg-1));
+      min-height: 100vh;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 240px 1fr 320px;
+      gap: 20px;
+      padding: 22px 24px 80px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .nav {
+      padding: 18px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0f4c5c, #1d7a84);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+    }
+
+    .nav h1 { font-size: 18px; margin: 0; }
+    .nav small { color: var(--muted); }
+
+    .nav-list {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav-item {
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .nav-item.active {
+      background: var(--surface-2);
+      color: var(--primary);
+      border: 1px solid #e9c78a;
+    }
+
+    .main { display: grid; gap: 18px; }
+
+    .topbar {
+      padding: 18px 22px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .topbar-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .title { font-size: 24px; font-weight: 700; margin: 0; }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .chip {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .chip.draft { background: #fcefd0; color: #835c00; }
+    .chip.sync { background: #daf5e4; color: #1c5d3a; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field select {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .quick-entry {
+      padding: 16px 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: 2.2fr 2fr 0.8fr 0.8fr 0.8fr 1.2fr 1fr 1fr 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn.primary { background: var(--primary); color: #fff; }
+    .btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+
+    .table-wrap { padding: 10px 14px 18px; }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 8px;
+      font-size: 13px;
+    }
+
+    thead th {
+      text-align: left;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 10px;
+    }
+
+    tbody tr {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 8px 20px rgba(18, 32, 35, 0.04);
+    }
+
+    tbody td { padding: 10px; }
+
+    tbody tr td:first-child {
+      border-top-left-radius: 14px;
+      border-bottom-left-radius: 14px;
+    }
+
+    tbody tr td:last-child {
+      border-top-right-radius: 14px;
+      border-bottom-right-radius: 14px;
+    }
+
+    .mono { font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    .row-input {
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .row-input[readonly] { background: #f5f2ec; color: #6b6b6b; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      padding: 12px 14px 8px;
+    }
+
+    .summary-card {
+      background: #fff9ef;
+      border: 1px dashed #f0cf92;
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .summary-card h3 {
+      margin: 0 0 6px;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .summary-card p { margin: 0; font-size: 20px; font-weight: 700; }
+
+    .side {
+      display: grid;
+      gap: 16px;
+      position: sticky;
+      top: 18px;
+      height: fit-content;
+    }
+
+    .card { padding: 16px; }
+
+    .card h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .card p { margin: 4px 0; font-size: 14px; }
+
+    .label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .big-num {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: "Space Mono", ui-monospace, monospace;
+      color: var(--primary);
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      padding: 0 18px 18px;
+    }
+
+    .mobile-bar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 253, 249, 0.95);
+      border-top: 1px solid var(--border);
+      padding: 12px 18px;
+      backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+
+    .mobile-bar .btn { flex: 1; }
+
+    .myanmar { font-family: "Noto Serif Myanmar", serif; }
+
+    @media (max-width: 1200px) {
+      .app { grid-template-columns: 200px 1fr; }
+      .side { display: none; }
+    }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .nav { position: static; }
+      .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .quick-grid { grid-template-columns: 1fr 1fr; }
+      .summary { grid-template-columns: 1fr; }
+      .mobile-bar { display: flex; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="nav panel">
+      <div class="brand">
+        <div class="brand-badge">SMM</div>
+        <div>
+          <h1>Sales Ops</h1>
+          <small>MTL Region</small>
+        </div>
+      </div>
+      <ul class="nav-list">
+        <li class="nav-item">Dashboard</li>
+        <li class="nav-item active">Daily Sales</li>
+        <li class="nav-item">Outlets</li>
+        <li class="nav-item">Products</li>
+        <li class="nav-item">Routes &amp; PJP</li>
+        <li class="nav-item">Reports</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <section class="topbar panel">
+        <div class="topbar-row">
+          <div>
+            <h2 class="title">Daily Sales Entry</h2>
+            <div class="meta">
+              <span id="meta-date">--</span>
+              <span class="myanmar">မိတ်ထီလာ (MTL)</span>
+              <span>Rep: Hein Min Thu</span>
+              <span id="meta-route">Route: -</span>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span class="chip draft">Draft</span>
+            <span class="chip sync">Last sync just now</span>
+          </div>
+        </div>
+        <div class="controls">
+          <label class="field">
+            Date
+            <input id="date-input" type="date" />
+          </label>
+          <label class="field">
+            Region
+            <select>
+              <option>MTL</option>
+              <option>MLM</option>
+              <option>YGN</option>
+            </select>
+          </label>
+          <label class="field">
+            Route / Way
+            <select id="route-select"></select>
+          </label>
+          <label class="field">
+            Voucher No
+            <input id="voucher-input" type="text" placeholder="Optional" />
+          </label>
+        </div>
+      </section>
+
+      <section class="quick-entry panel">
+        <div class="topbar-row" style="grid-template-columns: 1fr auto;">
+          <div>
+            <strong>Quick Entry</strong>
+            <div class="meta">Search outlet &amp; product. Packs/bottles auto‑convert to liters.</div>
+          </div>
+          <button class="btn ghost">Scan Invoice</button>
+        </div>
+        <div class="quick-grid">
+          <label class="field">
+            Outlet
+            <select id="qe-outlet"></select>
+          </label>
+          <label class="field">
+            Product
+            <select id="qe-product"></select>
+          </label>
+          <label class="field">
+            Pack
+            <input id="qe-pack" type="number" min="0" step="1" value="0" />
+          </label>
+          <label class="field">
+            Bottle
+            <input id="qe-bottle" type="number" min="0" step="1" value="0" />
+          </label>
+          <label class="field">
+            Liter
+            <input id="qe-liter" type="number" min="0" step="0.01" value="0" readonly />
+          </label>
+          <label class="field">
+            Channel
+            <select id="qe-channel">
+              <option>WS</option>
+              <option>SWS</option>
+              <option>Van</option>
+              <option>Contract</option>
+            </select>
+          </label>
+          <label class="field">
+            Sale Type
+            <input id="qe-sale" type="text" placeholder="Daily" />
+          </label>
+          <label class="field">
+            Car No
+            <input id="qe-car" type="text" placeholder="AA-1234" />
+          </label>
+          <label class="field">
+            Notes
+            <input id="qe-notes" type="text" placeholder="Optional" />
+          </label>
+          <button id="qe-add" class="btn primary">Add</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="summary">
+          <div class="summary-card">
+            <h3>Total Packs</h3>
+            <p id="sum-pack">0</p>
+          </div>
+          <div class="summary-card">
+            <h3>Total Bottles</h3>
+            <p id="sum-bottle">0</p>
+          </div>
+          <div class="summary-card">
+            <h3>Total Liters</h3>
+            <p id="sum-liter">0.00</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Outlet</th>
+                <th>Product</th>
+                <th class="mono">Pack</th>
+                <th class="mono">Bottle</th>
+                <th class="mono">Liter</th>
+                <th>Channel</th>
+                <th>Voucher</th>
+                <th>Car</th>
+                <th>Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="txn-body"></tbody>
+          </table>
+        </div>
+        <div class="footer-actions">
+          <button class="btn ghost" id="save-draft">Save Draft</button>
+          <button class="btn primary" id="submit-day">Submit Day</button>
+        </div>
+      </section>
+    </main>
+
+    <aside class="side">
+      <div class="panel card" id="outlet-card">
+        <h3>Outlet Details</h3>
+        <p class="label">Selected Outlet</p>
+        <p><strong id="outlet-name">-</strong></p>
+        <p class="myanmar" id="outlet-mm">-</p>
+        <p id="outlet-township">-</p>
+        <p id="outlet-phone">-</p>
+        <p class="label">Type</p>
+        <p id="outlet-type">-</p>
+      </div>
+
+      <div class="panel card" id="product-card">
+        <h3>Product Details</h3>
+        <p class="label">Selected Product</p>
+        <p><strong id="product-name">-</strong></p>
+        <p>Pack Size: <span id="product-pack">-</span></p>
+        <p>ML / Bottle: <span id="product-ml">-</span></p>
+        <p class="label">Conversion</p>
+        <p>1 Pack = <span id="product-bottles">-</span> Bottles</p>
+        <p>1 Bottle = <span id="product-liter">-</span> Liter</p>
+      </div>
+
+      <div class="panel card">
+        <h3>Day Health</h3>
+        <p class="label">Records</p>
+        <p class="big-num" id="day-count">0</p>
+        <p class="label">Duplicates</p>
+        <p class="big-num" style="color: var(--bad)">0</p>
+        <p class="label">Missing Township</p>
+        <p class="big-num" style="color: var(--accent)">0</p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="mobile-bar">
+    <button class="btn ghost">Save Draft</button>
+    <button class="btn primary">Add Row</button>
+  </div>
+
+  <script>
+    const txnBody = document.getElementById("txn-body");
+    const sumPack = document.getElementById("sum-pack");
+    const sumBottle = document.getElementById("sum-bottle");
+    const sumLiter = document.getElementById("sum-liter");
+    const dayCount = document.getElementById("day-count");
+
+    const qeOutlet = document.getElementById("qe-outlet");
+    const qeProduct = document.getElementById("qe-product");
+    const qePack = document.getElementById("qe-pack");
+    const qeBottle = document.getElementById("qe-bottle");
+    const qeLiter = document.getElementById("qe-liter");
+    const qeChannel = document.getElementById("qe-channel");
+    const qeSale = document.getElementById("qe-sale");
+    const qeCar = document.getElementById("qe-car");
+    const qeNotes = document.getElementById("qe-notes");
+    const dateInput = document.getElementById("date-input");
+    const routeSelect = document.getElementById("route-select");
+
+    let outlets = [];
+    let products = [];
+
+    function today() {
+      const d = new Date();
+      return d.toISOString().slice(0, 10);
+    }
+
+    function populateSelects() {
+      qeOutlet.innerHTML = "";
+      outlets.forEach((o) => {
+        const opt = document.createElement("option");
+        opt.value = o.outlet_id;
+        const name = o.outlet_name_en || o.outlet_name_mm || o.outlet_id;
+        opt.textContent = `${name} · ${o.outlet_type || ""}`;
+        qeOutlet.appendChild(opt);
+      });
+
+      qeProduct.innerHTML = "";
+      products.forEach((p) => {
+        const opt = document.createElement("option");
+        opt.value = p.product_id;
+        opt.textContent = `${p.product_name || p.product_id} (${p.ml || ""}ml)`;
+        qeProduct.appendChild(opt);
+      });
+    }
+
+    function populateRoutes(routes) {
+      routeSelect.innerHTML = "";
+      routes.forEach((r) => {
+        const opt = document.createElement("option");
+        opt.value = r.route_id;
+        opt.textContent = `${r.van_id || "Van"} ${r.way_code || ""}`.trim();
+        routeSelect.appendChild(opt);
+      });
+      document.getElementById("meta-route").textContent = `Route: ${routeSelect.options[0]?.text || "-"}`;
+    }
+
+    function getProduct(id) {
+      return products.find((p) => p.product_id === id) || products[0];
+    }
+
+    function getOutlet(id) {
+      return outlets.find((o) => o.outlet_id === id) || outlets[0];
+    }
+
+    function calcLiter(pack, bottle, product) {
+      const packSize = Number(product.pack_size || 0);
+      const ml = Number(product.ml || product.ml_per_bottle || 0);
+      const totalBottles = Number(pack || 0) * packSize + Number(bottle || 0);
+      return (totalBottles * ml) / 1000;
+    }
+
+    function updateQuickConversion() {
+      const product = getProduct(qeProduct.value);
+      const liter = calcLiter(qePack.value, qeBottle.value, product);
+      qeLiter.value = isFinite(liter) ? liter.toFixed(2) : "0.00";
+      document.getElementById("product-name").textContent = product.product_name || "-";
+      document.getElementById("product-pack").textContent = product.pack_size || "-";
+      document.getElementById("product-ml").textContent = product.ml || product.ml_per_bottle || "-";
+      document.getElementById("product-bottles").textContent = product.pack_size || "-";
+      document.getElementById("product-liter").textContent = product.ml ? (Number(product.ml) / 1000).toFixed(2) : "-";
+    }
+
+    function updateOutletCard() {
+      const outlet = getOutlet(qeOutlet.value);
+      document.getElementById("outlet-name").textContent = outlet.outlet_name_en || outlet.outlet_name_mm || "-";
+      document.getElementById("outlet-mm").textContent = outlet.outlet_name_mm || "-";
+      document.getElementById("outlet-township").textContent = outlet.township_name_raw || "-";
+      document.getElementById("outlet-phone").textContent = outlet.contact_phone || "-";
+      document.getElementById("outlet-type").textContent = outlet.outlet_type || "-";
+      if (outlet.route_id) {
+        routeSelect.value = outlet.route_id;
+        document.getElementById("meta-route").textContent = `Route: ${routeSelect.options[routeSelect.selectedIndex]?.text || "-"}`;
+      }
+    }
+
+    function addRow(row) {
+      const tr = document.createElement("tr");
+      tr.dataset.outletId = row.outlet_id;
+      tr.dataset.productId = row.product_id;
+      tr.innerHTML = `
+        <td>${row.outlet}</td>
+        <td>${row.product}</td>
+        <td><input class="row-input" type="number" min="0" value="${row.pack}" /></td>
+        <td><input class="row-input" type="number" min="0" value="${row.bottle}" /></td>
+        <td><input class="row-input" type="number" min="0" value="${row.liter}" readonly /></td>
+        <td>${row.channel}</td>
+        <td><input class="row-input" type="text" value="${row.voucher}" /></td>
+        <td><input class="row-input" type="text" value="${row.car}" /></td>
+        <td><input class="row-input" type="text" value="${row.notes}" /></td>
+        <td><button class="btn ghost" data-remove>Remove</button></td>
+      `;
+      txnBody.appendChild(tr);
+
+      const inputs = tr.querySelectorAll("input");
+      const packInput = inputs[0];
+      const bottleInput = inputs[1];
+      const literInput = inputs[2];
+
+      function recalc() {
+        const product = getProduct(row.product_id);
+        const newLiter = calcLiter(packInput.value, bottleInput.value, product);
+        literInput.value = isFinite(newLiter) ? newLiter.toFixed(2) : "0.00";
+        updateTotals();
+      }
+
+      packInput.addEventListener("input", recalc);
+      bottleInput.addEventListener("input", recalc);
+
+      tr.querySelector("[data-remove]").addEventListener("click", () => {
+        tr.remove();
+        updateTotals();
+      });
+
+      updateTotals();
+    }
+
+    function updateTotals() {
+      let totalPack = 0;
+      let totalBottle = 0;
+      let totalLiter = 0;
+      txnBody.querySelectorAll("tr").forEach((tr) => {
+        const inputs = tr.querySelectorAll("input");
+        totalPack += Number(inputs[0].value || 0);
+        totalBottle += Number(inputs[1].value || 0);
+        totalLiter += Number(inputs[2].value || 0);
+      });
+      sumPack.textContent = totalPack.toFixed(0);
+      sumBottle.textContent = totalBottle.toFixed(0);
+      sumLiter.textContent = totalLiter.toFixed(2);
+      dayCount.textContent = txnBody.querySelectorAll("tr").length;
+    }
+
+    async function loadMetadata() {
+      const res = await fetch(`/api/metadata`);
+      const data = await res.json();
+      outlets = data.outlets || [];
+      products = data.products || [];
+      populateSelects();
+      populateRoutes(data.routes || []);
+      updateQuickConversion();
+      updateOutletCard();
+    }
+
+    async function loadSales(date) {
+      txnBody.innerHTML = "";
+      const res = await fetch(`/api/sales?date=${date}`);
+      const data = await res.json();
+      (data.rows || []).forEach((r) => {
+        const outlet = getOutlet(r.outlet_id) || {};
+        const product = getProduct(r.product_id) || {};
+        addRow({
+          outlet_id: r.outlet_id,
+          product_id: r.product_id,
+          outlet: outlet.outlet_name_en || outlet.outlet_name_mm || r.outlet_id,
+          product: product.product_name || r.product_id,
+          pack: r.qty_pack || 0,
+          bottle: r.qty_bottle || 0,
+          liter: r.qty_liter || 0,
+          channel: r.channel || "",
+          voucher: r.voucher_no || "",
+          car: r.car_no || "",
+          notes: ""
+        });
+      });
+    }
+
+    document.getElementById("qe-add").addEventListener("click", async () => {
+      const outlet = getOutlet(qeOutlet.value);
+      const product = getProduct(qeProduct.value);
+      const date = dateInput.value || today();
+      const routeId = routeSelect.value || null;
+      const payload = {
+        date,
+        outlet_id: outlet.outlet_id,
+        product_id: product.product_id,
+        route_id: routeId,
+        qty_pack: Number(qePack.value || 0),
+        qty_bottle: Number(qeBottle.value || 0),
+        qty_liter: Number(qeLiter.value || 0),
+        channel: qeChannel.value,
+        voucher_no: document.getElementById("voucher-input").value || "",
+        car_no: qeCar.value,
+        sale_type_raw: qeSale.value,
+      };
+
+      const res = await fetch(`/api/sales`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const result = await res.json();
+      if (result.duplicates && result.inserted === 0) {
+        alert("Duplicate transaction detected. Entry was not added.");
+        return;
+      }
+
+      addRow({
+        outlet_id: outlet.outlet_id,
+        product_id: product.product_id,
+        outlet: outlet.outlet_name_en || outlet.outlet_name_mm || outlet.outlet_id,
+        product: product.product_name || product.product_id,
+        pack: payload.qty_pack,
+        bottle: payload.qty_bottle,
+        liter: payload.qty_liter,
+        channel: payload.channel,
+        voucher: payload.voucher_no,
+        car: payload.car_no,
+        notes: qeNotes.value
+      });
+
+      qePack.value = 0;
+      qeBottle.value = 0;
+      qeNotes.value = "";
+      updateQuickConversion();
+    });
+
+    qeProduct.addEventListener("change", updateQuickConversion);
+    qePack.addEventListener("input", updateQuickConversion);
+    qeBottle.addEventListener("input", updateQuickConversion);
+    qeOutlet.addEventListener("change", updateOutletCard);
+
+    dateInput.value = today();
+    document.getElementById("meta-date").textContent = dateInput.value;
+    dateInput.addEventListener("change", () => {
+      document.getElementById("meta-date").textContent = dateInput.value;
+      loadSales(dateInput.value);
+    });
+    routeSelect.addEventListener("change", () => {
+      document.getElementById("meta-route").textContent = `Route: ${routeSelect.options[routeSelect.selectedIndex]?.text || "-"}`;
+    });
+
+    loadMetadata().then(() => loadSales(dateInput.value));
+  </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+# SMM Web App (Single Source of Truth)
+
+A FastAPI + SQLite app that replaces Excel-heavy workflows while preserving Excel outputs via automatic regeneration from the database.
+
+## Quick Start
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# initialize database
+python3 scripts/db_init.py --db db/app.db
+
+# migrate Excel inputs (all regions)
+python3 scripts/migrate_from_excel.py --in-dir in --db db/app.db
+
+# or per region (example MTL)
+python3 scripts/migrate_from_excel.py --in-dir in/MTL --db db/app.db --region MTL
+
+# run server
+uvicorn app.main:app --reload
+```
+
+Open:
+- http://127.0.0.1:8000/daily-sales
+- http://127.0.0.1:8000/outlets
+- http://127.0.0.1:8000/reports
+
+## Excel Regeneration (from DB)
+
+The Reports dashboard includes **Export Excel**, which regenerates Excel files using templates in `source/<REGION>/` and downloads a ZIP.
+
+## Health & Ops
+
+- `GET /health` basic liveness check
+- `GET /ready` DB readiness check
+- `GET /api/reports/export_history` recent export runs
+
+## Environment Variables
+
+- `SMM_DB` : SQLite DB path (default `db/app.db`)
+- `SMM_STATIC_DIR` : static assets path (default `app/static`)
+- `SMM_EXPORT_ROOT` : export folder for ZIPs (default `out/exports`)
+
+## Project Structure
+
+```
+app/
+  api/            # FastAPI routes
+  core/           # config + DB helpers
+  services/       # domain services (Excel export, lookups)
+  static/         # UI
+  main.py         # entrypoint
+scripts/          # ETL + reporting tools
+source/           # Excel templates (by region)
+```
+
+## Publishing Notes
+
+- Use `SMM_DB` to point at production DB.
+- Ensure `source/<REGION>` templates are present for Excel regeneration.
+- Exports are stored under `out/exports/` for auditability.

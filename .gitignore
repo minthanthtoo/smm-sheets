@@ -1,0 +1,20 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# local databases and exports
+/db/*.db
+/db/*.sqlite
+/out/
+/out_*/
+/etl_output/
+
+# raw inputs and staging
+/in/
+/in_*/
+/files/
+/prototype/
+
+# temp exports
+/out/exports/
