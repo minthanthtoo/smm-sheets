@@ -199,7 +199,8 @@ def migrate(in_dir: Path, db_target: str, region_filter: str | None) -> None:
         # products
         for p in products.values():
             product_id = p.get("product_id")
-            if not product_id:
+            product_name = (p.get("product_name") or "").strip() if isinstance(p.get("product_name"), str) else p.get("product_name")
+            if not product_id or not product_name:
                 continue
             conn.execute(
                 """
@@ -211,7 +212,7 @@ def migrate(in_dir: Path, db_target: str, region_filter: str | None) -> None:
                 """,
                 (
                     product_id,
-                    p.get("product_name"),
+                    product_name,
                     p.get("ml"),
                     p.get("packing"),
                     p.get("sales_price"),
@@ -415,7 +416,8 @@ def migrate(in_dir: Path, db_target: str, region_filter: str | None) -> None:
 
         for p in products.values():
             pid = p.get("product_id")
-            if not pid:
+            pname = (p.get("product_name") or "").strip() if isinstance(p.get("product_name"), str) else p.get("product_name")
+            if not pid or not pname:
                 continue
             effective_from = earliest_product.get(pid, today_iso())
             pack_size = parse_pack_size(p.get("packing") or "")
