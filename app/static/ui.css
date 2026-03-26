@@ -757,6 +757,8 @@ tbody tr:nth-child(even) {
   table th,
   table td {
     padding: 8px 10px;
+    white-space: nowrap;
+    word-break: normal;
   }
 
   .toolbar-actions {
@@ -779,6 +781,7 @@ tbody tr:nth-child(even) {
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    min-width: 680px;
   }
 
   .toolbar-actions .search-input {
