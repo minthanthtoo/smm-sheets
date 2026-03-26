@@ -256,7 +256,7 @@ def process_files(paths: List[Path]):
                 parse_pjp_outlets_sheet(path, ws, region_id, outlets, routes, route_outlet_rows)
                 handled = True
             if not handled:
-                parse_daily_sales_sheet(path, ws, region_id, products, outlets, townships, sales_rows, financial_rows)
+                continue
         wb.close()
 
     # enrich with txn_key/hash

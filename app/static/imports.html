@@ -410,10 +410,13 @@
             </ul>
           </div>
           <div class="info-card">
-            <strong>Filename Patterns (Import & Regen)</strong>
+            <strong>Filename Categories (Core vs Regenerated)</strong>
             <ul class="info-list">
-              <li>Import data: `*Table*DailySales*`, `*DailySales*`, `*PGSales*` / `*PG Daily Sales*`, `*Outlet List*`, `*Way Plan*`, `*PJP*Outlet*`</li>
-              <li>Regen templates: `*Individual*Sales*`, `*SKU*Summary*` / `*SKU*Analysis*`, `*Township*Summary*`, `*Van Wise*`, `*Sales Compare*`</li>
+              <li>Core imports: `*Table*DailySales*`, `*DailySales*`, `*PG Table*`, `*PGSales*` / `*PG Daily Sales*`.</li>
+              <li>Optional core sheets: `*Outlet List*`, `*Way Plan*` / `*Way Play*`, `*PJP*Outlet*`.</li>
+              <li>Regen-ready outputs: `*Individual*Sales*`, `*SKU*Summary*` / `*SKU*Wise*` / `*SKU*Analysis*`, `*Township*Summary*`, `*Van Wise*`.</li>
+              <li>Template-only exports: `*Sales Compare*`, `*Follow Up Sales*` / `*FUS*`, `*Debtor*` / `*OP Sales Debtor*` / `*Van+Wholesale*`.</li>
+              <li>See the Source Catalog below for exact file names by region.</li>
               <li>Headers still drive parsing; filenames only help detection.</li>
             </ul>
           </div>
@@ -471,6 +474,134 @@
         </div>
       </dialog>
 
+      <section class="panel section">
+        <div class="toolbar">
+          <div class="toolbar-title">
+            <strong>Source Catalog (Core vs Export)</strong>
+            <div class="meta">Every file in `/source` is classified so nothing is missed.</div>
+          </div>
+          <div class="stack-row">
+            <span class="tag core">Core Input</span>
+            <span class="tag regen">Regenerated</span>
+            <span class="tag template">Template</span>
+          </div>
+        </div>
+        <div id="catalog-grid" class="info-grid" style="margin-top:12px;"></div>
+        <details class="details-panel" style="margin-top:12px;">
+          <summary>Optional core sheets (inside any core file)</summary>
+          <ul class="info-list" style="margin-top:8px;">
+            <li>`Outlet List` (outlet master + township)</li>
+            <li>`Way Plan` / `Way Play` (PJP plans)</li>
+            <li>`PJP Outlets` (route totals + outlet list)</li>
+          </ul>
+        </details>
+        <div class="guide-footnote">Core inputs are required for import. Export builder regenerates or copies templates for everything else.</div>
+      </section>
+
+      <section class="panel section">
+        <div class="toolbar">
+          <div class="toolbar-title">
+            <strong>Export Builder (Regenerate Outputs)</strong>
+            <div class="meta">Choose exactly which report files to generate for download.</div>
+          </div>
+        </div>
+        <div class="controls" style="margin-top:12px;">
+          <label class="field">
+            Export Region
+            <select id="export-region">
+              <option value="">All Regions</option>
+            </select>
+          </label>
+          <label class="field">
+            Export Scope
+            <select id="export-scope">
+              <option value="selected">Selected categories only</option>
+              <option value="all">All categories in template library</option>
+            </select>
+          </label>
+        </div>
+        <div class="check-grid" style="margin-top:12px;">
+          <label class="check-card">
+            <input class="check-input export-option" type="checkbox" data-export="individual_sales" checked />
+            <div>
+              <strong>Individual Sales</strong>
+              <div class="meta">Files: `*Individual*Sales*`</div>
+              <div class="meta">Regenerated from sales transactions.</div>
+            </div>
+            <span class="tag regen">Regen</span>
+          </label>
+          <label class="check-card">
+            <input class="check-input export-option" type="checkbox" data-export="sku_summary" checked />
+            <div>
+              <strong>SKU Summary</strong>
+              <div class="meta">Files: `*SKU*Summary*`, `*SKU*Wise*`, `*SKU*Analysis*`</div>
+              <div class="meta">Aggregated by product.</div>
+            </div>
+            <span class="tag regen">Regen</span>
+          </label>
+          <label class="check-card">
+            <input class="check-input export-option" type="checkbox" data-export="township_summary" checked />
+            <div>
+              <strong>Township Summary</strong>
+              <div class="meta">Files: `*Township*Summary*`</div>
+              <div class="meta">Totals by township + detail sheets.</div>
+            </div>
+            <span class="tag regen">Regen</span>
+          </label>
+          <label class="check-card">
+            <input class="check-input export-option" type="checkbox" data-export="van_wise_sku" checked />
+            <div>
+              <strong>Van Wise SKU</strong>
+              <div class="meta">Files: `*Van Wise*`</div>
+              <div class="meta">Route/van performance by SKU.</div>
+            </div>
+            <span class="tag regen">Regen</span>
+          </label>
+          <label class="check-card">
+            <input class="check-input export-option" type="checkbox" data-export="sales_compare" />
+            <div>
+              <strong>Sales Compare</strong>
+              <div class="meta">Files: `*Sales Compare*`, `*Compare for*`</div>
+              <div class="meta">Template copied (regen logic pending).</div>
+            </div>
+            <span class="tag template">Template</span>
+          </label>
+          <label class="check-card">
+            <input class="check-input export-option" type="checkbox" data-export="follow_up_sales" />
+            <div>
+              <strong>Follow Up Sales</strong>
+              <div class="meta">Files: `*Follow Up Sales*`, `*FUS*`</div>
+              <div class="meta">Template copied (regen logic pending).</div>
+            </div>
+            <span class="tag template">Template</span>
+          </label>
+          <label class="check-card">
+            <input class="check-input export-option" type="checkbox" data-export="debtors" />
+            <div>
+              <strong>Debtors</strong>
+              <div class="meta">Files: `*Debtor*`, `*OP Sales Debtor*`, `*Van+Wholesale*`</div>
+              <div class="meta">Template copied (regen logic pending).</div>
+            </div>
+            <span class="tag template">Template</span>
+          </label>
+          <label class="check-card">
+            <input class="check-input export-option" type="checkbox" data-export="other" />
+            <div>
+              <strong>Other Templates</strong>
+              <div class="meta">Any unclassified templates in `/source`.</div>
+              <div class="meta">Copied as-is to avoid missing files.</div>
+            </div>
+            <span class="tag template">Template</span>
+          </label>
+        </div>
+        <div class="footer-actions" style="margin-top:12px;">
+          <button id="export-select-all" class="btn ghost" type="button">Select All</button>
+          <button id="export-clear" class="btn ghost" type="button">Clear</button>
+          <button id="export-run" class="btn primary" type="button">Generate Selected</button>
+        </div>
+        <div class="guide-footnote">Exports package selected files per region and include a regeneration manifest.</div>
+      </section>
+
       <section class="panel" style="padding: 16px;">
         <div class="toolbar">
           <div class="toolbar-title">
@@ -523,22 +654,151 @@
     const importsEmpty = document.getElementById('imports-empty');
     const guideDialog = document.getElementById('guide-dialog');
     const openGuide = document.getElementById('open-guide');
+    const exportRegion = document.getElementById('export-region');
+    const exportScope = document.getElementById('export-scope');
+    const exportRun = document.getElementById('export-run');
+    const exportSelectAll = document.getElementById('export-select-all');
+    const exportClear = document.getElementById('export-clear');
+    const exportOptions = Array.from(document.querySelectorAll('.export-option'));
+    const catalogGrid = document.getElementById('catalog-grid');
 
     let importsRows = [];
+    const categoryLabels = {
+      individual_sales: 'Individual Sales',
+      sku_summary: 'SKU Summary',
+      township_summary: 'Township Summary',
+      van_wise_sku: 'Van Wise SKU',
+      sales_compare: 'Sales Compare',
+      follow_up_sales: 'Follow Up Sales',
+      debtors: 'Debtors',
+      other: 'Other',
+    };
+    const categoryOrder = [
+      'individual_sales',
+      'sku_summary',
+      'township_summary',
+      'van_wise_sku',
+      'sales_compare',
+      'follow_up_sales',
+      'debtors',
+      'other',
+    ];
+    const regenCategories = new Set([
+      'individual_sales',
+      'sku_summary',
+      'township_summary',
+      'van_wise_sku',
+    ]);
 
     async function loadRegions() {
       try {
         const res = await fetch('/api/regions');
         const data = await res.json();
         regionSelect.innerHTML = '<option value="">All Regions</option>';
+        if (exportRegion) exportRegion.innerHTML = '<option value="">All Regions</option>';
         (data.regions || []).forEach((r) => {
           const opt = document.createElement('option');
           opt.value = r;
           opt.textContent = r;
           regionSelect.appendChild(opt);
+          if (exportRegion) {
+            const expOpt = document.createElement('option');
+            expOpt.value = r;
+            expOpt.textContent = r;
+            exportRegion.appendChild(expOpt);
+          }
         });
       } catch (err) {
         console.error(err);
+      }
+    }
+
+    function buildCatalogList(items, tagClass, tagLabel, extraLabel) {
+      if (!items.length) return '<div class="guide-footnote">No files detected.</div>';
+      return `
+        <ul class="info-list">
+          ${items
+            .map((item) => {
+              const catLabel = item.category ? (categoryLabels[item.category] || item.category) : '';
+              const label = extraLabel ? extraLabel(item) : catLabel;
+              return `
+                <li>
+                  <span class="tag ${tagClass}">${tagLabel}</span>
+                  <span class="mono">${item.file}</span>
+                  ${label ? `<span class="meta">(${label})</span>` : ''}
+                </li>
+              `;
+            })
+            .join('')}
+        </ul>
+      `;
+    }
+
+    function renderCatalog(data) {
+      if (!catalogGrid) return;
+      const regions = data && data.regions ? data.regions : [];
+      catalogGrid.innerHTML = '';
+      if (!regions.length) {
+        catalogGrid.innerHTML = '<div class="info-card"><strong>No source files found.</strong><div class="meta">Add files to the /source folder to populate this catalog.</div></div>';
+        return;
+      }
+      regions.forEach((region) => {
+        const core = region.core || [];
+        const exports = region.exports || [];
+        const grouped = {};
+        exports.forEach((item) => {
+          grouped[item.category] = grouped[item.category] || [];
+          grouped[item.category].push(item);
+        });
+        const orderedKeys = [
+          ...categoryOrder.filter((key) => grouped[key] && grouped[key].length),
+          ...Object.keys(grouped).filter((key) => !categoryOrder.includes(key)),
+        ];
+        const exportSections = orderedKeys
+          .map((key) => {
+            const entries = grouped[key];
+            const label = categoryLabels[key] || key;
+            const isRegen = regenCategories.has(key);
+            return `
+              <div class="catalog-group">
+                <div class="catalog-group-title">${label} <span class="meta">(${entries.length})</span></div>
+                ${buildCatalogList(entries, isRegen ? 'regen' : 'template', isRegen ? 'Regen' : 'Template', (item) => categoryLabels[item.category] || item.category)}
+              </div>
+            `;
+          })
+          .join('');
+
+        const card = document.createElement('div');
+        card.className = 'info-card catalog-card';
+        card.innerHTML = `
+          <strong>${region.region}</strong>
+          <div class="meta">${core.length} core inputs · ${exports.length} export templates</div>
+          ${core.length ? '' : '<div><span class="tag missing">Missing Core</span></div>'}
+          <details class="details-panel" ${core.length ? 'open' : ''}>
+            <summary>Core Inputs (${core.length})</summary>
+            ${core.length
+              ? buildCatalogList(core, 'core', 'Core', (item) => item.reason || 'Core input')
+              : '<div class="guide-footnote">No core file found. Add a Table + DailySales or PG Sales file.</div>'
+            }
+          </details>
+          <details class="details-panel" ${exports.length ? '' : 'open'}>
+            <summary>Export Outputs (${exports.length})</summary>
+            ${exports.length ? exportSections : '<div class="guide-footnote">No export templates found for this region.</div>'}
+          </details>
+        `;
+        catalogGrid.appendChild(card);
+      });
+    }
+
+    async function loadCatalog() {
+      if (!catalogGrid) return;
+      try {
+        const res = await fetch('/api/imports/catalog');
+        const data = await res.json();
+        renderCatalog(data);
+      } catch (err) {
+        console.error(err);
+        catalogGrid.innerHTML = '<div class="info-card"><strong>Catalog unavailable.</strong><div class="meta">Unable to load source file catalog.</div></div>';
       }
     }
 
@@ -615,10 +875,73 @@
       }
     }
 
+    function collectExportSelection() {
+      if (exportScope && exportScope.value === 'all') {
+        return exportOptions.map((opt) => opt.dataset.export).filter(Boolean);
+      }
+      return exportOptions.filter((opt) => opt.checked).map((opt) => opt.dataset.export).filter(Boolean);
+    }
+
+    async function runExport() {
+      if (!exportRun) return;
+      const selected = collectExportSelection();
+      if (!selected.length) {
+        alert('Select at least one export category.');
+        return;
+      }
+      exportRun.disabled = true;
+      const prevLabel = exportRun.textContent;
+      exportRun.textContent = 'Preparing...';
+      try {
+        const payload = {
+          region: exportRegion && exportRegion.value ? exportRegion.value : null,
+          include: selected,
+        };
+        const res = await fetch('/api/reports/export_excel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) {
+          const msg = await res.text();
+          throw new Error(msg || 'Export failed');
+        }
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const disposition = res.headers.get('Content-Disposition') || '';
+        const match = disposition.match(/filename=\"?([^\";]+)\"?/);
+        a.href = url;
+        a.download = match ? match[1] : 'excel_export.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        alert(err.message || 'Export failed');
+      } finally {
+        exportRun.disabled = false;
+        exportRun.textContent = prevLabel || 'Generate Selected';
+      }
+    }
+
     importsSearch.addEventListener('input', renderImports);
     importsStatus.addEventListener('change', renderImports);
     refreshBtn.addEventListener('click', loadImports);
     importBtn.addEventListener('click', runImport);
+    if (exportSelectAll) {
+      exportSelectAll.addEventListener('click', () => {
+        exportOptions.forEach((opt) => { opt.checked = true; });
+      });
+    }
+    if (exportClear) {
+      exportClear.addEventListener('click', () => {
+        exportOptions.forEach((opt) => { opt.checked = false; });
+      });
+    }
+    if (exportRun) {
+      exportRun.addEventListener('click', runExport);
+    }
 
     if (guideDialog && openGuide) {
       openGuide.addEventListener('click', () => guideDialog.showModal());
@@ -632,6 +955,7 @@
 
     loadRegions();
     loadImports();
+    loadCatalog();
   </script>
 </body>
 </html>

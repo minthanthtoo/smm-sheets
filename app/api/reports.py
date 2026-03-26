@@ -11,6 +11,18 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from app.core.db import get_conn, row_to_dict
 from app.services.excel_export import build_export_zip, list_regions, prepare_export_dir, run_excel_regeneration
 
+
+EXPORT_CATEGORIES = {
+    "individual_sales",
+    "sku_summary",
+    "township_summary",
+    "van_wise_sku",
+    "sales_compare",
+    "follow_up_sales",
+    "debtors",
+    "other",
+}
+
 router = APIRouter(prefix="/api")
 
 
@@ -138,6 +150,16 @@ def quality_summary(start: str | None = None, end: str | None = None):
 async def export_excel(request: Request):
     payload = await request.json()
     region = payload.get("region") if isinstance(payload, dict) else None
+    include = payload.get("include") if isinstance(payload, dict) else None
+    if include is not None and isinstance(include, str):
+        include = [v.strip() for v in include.split(",") if v.strip()]
+    if include is not None and not isinstance(include, list):
+        raise HTTPException(status_code=400, detail="include must be a list or comma-separated string")
+    if include:
+        include = [str(v) for v in include]
+        invalid = [v for v in include if v not in EXPORT_CATEGORIES]
+        if invalid:
+            raise HTTPException(status_code=400, detail=f"Unknown export categories: {', '.join(invalid)}")
     if region:
         region = str(region).upper()
         if region not in list_regions():
@@ -166,7 +188,7 @@ async def export_excel(request: Request):
         conn.close()
 
     try:
-        run_excel_regeneration(out_dir)
+        run_excel_regeneration(out_dir, include=include or None)
         zip_path = build_export_zip(out_dir, region)
     except HTTPException as exc:
         conn = get_conn()

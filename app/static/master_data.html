@@ -224,7 +224,7 @@
             <span class="myanmar">အခြေခံဒေတာ ပြင်ဆင်ခြင်း</span>
           </div>
         </div>
-        <div class="controls" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+        <div class="controls">
           <label class="field">Region Filter
             <select id="md-region-filter">
               <option value="">All Regions</option>
@@ -314,6 +314,21 @@
       </dialog>
 
       <section class="panel section">
+        <div class="toolbar">
+          <div class="toolbar-title">
+            <strong>Master Data Sections</strong>
+            <div class="meta">Jump between lists without long scrolling.</div>
+          </div>
+          <div class="tab-bar" role="tablist" aria-label="Master data tabs">
+            <button class="tab active" type="button" role="tab" aria-selected="true" data-tab-trigger="products" aria-controls="tab-products">Products</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab-trigger="townships" aria-controls="tab-townships">Townships</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab-trigger="routes" aria-controls="tab-routes">Routes</button>
+            <button class="tab" type="button" role="tab" aria-selected="false" data-tab-trigger="pjp" aria-controls="tab-pjp">PJP Plans</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel section data-section" id="tab-products" data-tab="products" role="tabpanel">
         <h3>Products</h3>
         <div class="controls">
           <label class="field">Product ID <input id="prod-id" placeholder="optional" /></label>
@@ -356,7 +371,7 @@
         <div id="prod-history" style="font-size:13px; color:var(--muted);"></div>
       </section>
 
-      <section class="panel section">
+      <section class="panel section data-section" id="tab-townships" data-tab="townships" role="tabpanel" hidden>
         <h3>Townships</h3>
         <div class="controls">
           <label class="field">Township ID <input id="town-id" placeholder="optional" /></label>
@@ -393,7 +408,7 @@
         <div id="town-history" style="font-size:13px; color:var(--muted);"></div>
       </section>
 
-      <section class="panel section">
+      <section class="panel section data-section" id="tab-routes" data-tab="routes" role="tabpanel" hidden>
         <h3>Routes</h3>
         <div class="controls">
           <label class="field">Route ID <input id="route-id" placeholder="optional" /></label>
@@ -434,7 +449,7 @@
         <div id="route-history" style="font-size:13px; color:var(--muted);"></div>
       </section>
 
-      <section class="panel section">
+      <section class="panel section data-section" id="tab-pjp" data-tab="pjp" role="tabpanel" hidden>
         <h3>PJP Plans</h3>
         <div class="controls">
           <label class="field">Date <input id="pjp-date" type="date" /></label>
@@ -495,6 +510,36 @@
     const pjpEmpty = document.getElementById('pjp-empty');
     const guideDialog = document.getElementById('guide-dialog');
     const openGuide = document.getElementById('open-guide');
+    const tabButtons = Array.from(document.querySelectorAll('[data-tab-trigger]'));
+    const tabSections = Array.from(document.querySelectorAll('.data-section'));
+
+    function setActiveTab(tabName, updateHash = true) {
+      tabButtons.forEach((btn) => {
+        const isActive = btn.dataset.tabTrigger === tabName;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+
+      tabSections.forEach((section) => {
+        const isActive = section.dataset.tab === tabName;
+        section.hidden = !isActive;
+      });
+
+      if (updateHash) {
+        history.replaceState(null, '', `#${tabName}`);
+      }
+    }
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        setActiveTab(btn.dataset.tabTrigger);
+      });
+    });
+
+    const initialTab = (location.hash || '').replace('#', '') || 'products';
+    const availableTabs = tabButtons.map((btn) => btn.dataset.tabTrigger);
+    const safeTab = availableTabs.includes(initialTab) ? initialTab : 'products';
+    setActiveTab(safeTab, false);
 
     function filterTable(bodyEl, query, countEl, emptyEl) {
       const q = (query || '').toLowerCase().trim();

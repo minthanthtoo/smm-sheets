@@ -90,6 +90,7 @@ def main() -> None:
     parser.add_argument("--out-dir", default="out")
     parser.add_argument("--root-dir", default=".")
     parser.add_argument("--no-clean", action="store_true")
+    parser.add_argument("--include", default="", help="Comma-separated export categories to include")
     args = parser.parse_args()
 
     root = Path(args.root_dir).resolve()
@@ -98,7 +99,8 @@ def main() -> None:
     db_target = resolve_db_target(root, args.db)
 
     export_db(db_target, staging_dir)
-    regenerate_templates(root, root / "in", out_dir, clean_out=not args.no_clean)
+    include = [p.strip() for p in str(args.include).split(",") if p.strip()]
+    regenerate_templates(root, root / "in", out_dir, clean_out=not args.no_clean, include=include or None)
 
 
 if __name__ == "__main__":

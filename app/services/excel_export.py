@@ -22,7 +22,7 @@ def list_regions() -> List[str]:
     return sorted(regions)
 
 
-def run_excel_regeneration(out_dir: Path) -> None:
+def run_excel_regeneration(out_dir: Path, include: List[str] | None = None) -> None:
     cmd = [
         sys.executable,
         str(ROOT / "scripts" / "regenerate_reports_from_db.py"),
@@ -33,6 +33,8 @@ def run_excel_regeneration(out_dir: Path) -> None:
         "--out-dir",
         str(out_dir),
     ]
+    if include:
+        cmd.extend(["--include", ",".join(include)])
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
         detail = result.stderr.strip() or result.stdout.strip() or "Export failed"
@@ -56,9 +58,13 @@ def build_export_zip(out_dir: Path, region: str | None) -> Path:
     zip_path = out_dir / zip_name
     with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         for rdir in sorted(region_dirs):
-            for xlsx in sorted(rdir.glob("*.xlsx")):
-                arcname = f"{rdir.name}/{xlsx.name}"
-                zf.write(xlsx, arcname)
+            files = [
+                p for p in rdir.iterdir()
+                if p.is_file() and p.suffix.lower() in {".xlsx", ".xlsm"}
+            ]
+            for book in sorted(files):
+                arcname = f"{rdir.name}/{book.name}"
+                zf.write(book, arcname)
             for manifest in sorted(rdir.glob("*_manifest.json")):
                 arcname = f"{rdir.name}/{manifest.name}"
                 zf.write(manifest, arcname)

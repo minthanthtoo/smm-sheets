@@ -3,14 +3,16 @@ from __future__ import annotations
 import datetime as dt
 import json
 import logging
+import re
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
+from app.core.config import ROOT
 from app.core.db import get_conn
 from app.services.imports import list_input_files, new_job_dir, run_migration
 
@@ -18,6 +20,75 @@ router = APIRouter(prefix="/api")
 logger = logging.getLogger("smm")
 
 _executor = ThreadPoolExecutor(max_workers=1)
+
+EXPORT_REGEN = {
+    "individual_sales",
+    "sku_summary",
+    "township_summary",
+    "van_wise_sku",
+}
+
+
+def normalize_filename(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", name.lower()).strip()
+
+
+def classify_template_name(filename: str) -> str:
+    key = normalize_filename(filename)
+    if "individual" in key:
+        return "individual_sales"
+    if "van wise" in key:
+        return "van_wise_sku"
+    if "sku summary" in key or "sku wise" in key or "sku analysis" in key:
+        return "sku_summary"
+    if "township" in key and "summary" in key:
+        return "township_summary"
+    if "sales compare" in key or key.startswith("compare"):
+        return "sales_compare"
+    if "follow up" in key or "followup" in key or "fus" in key:
+        return "follow_up_sales"
+    if "debtor" in key:
+        return "debtors"
+    return "other"
+
+
+def core_input_reason(filename: str) -> str | None:
+    key = normalize_filename(filename)
+    if "table" in key and ("dailysales" in key or "daily sales" in key):
+        return "Table + DailySales"
+    if "pg" in key and ("pg sales" in key or "pg daily sales" in key or "pg dailysales" in key):
+        return "PG Table + PGSales"
+    return None
+
+
+def build_source_catalog() -> Dict:
+    source_dir = ROOT / "source"
+    regions = []
+    if not source_dir.exists():
+        return {"regions": regions}
+    for region_dir in sorted([p for p in source_dir.iterdir() if p.is_dir()]):
+        core_files = []
+        export_files = []
+        files = sorted(
+            [p for p in region_dir.iterdir() if p.is_file() and p.suffix.lower() in {".xlsx", ".xlsm"}]
+        )
+        for f in files:
+            reason = core_input_reason(f.name)
+            if reason:
+                core_files.append({"file": f.name, "reason": reason})
+                continue
+            category = classify_template_name(f.name)
+            export_files.append({
+                "file": f.name,
+                "category": category,
+                "export_type": "regen" if category in EXPORT_REGEN else "template",
+            })
+        regions.append({
+            "region": region_dir.name.upper(),
+            "core": core_files,
+            "exports": export_files,
+        })
+    return {"regions": regions}
 
 
 def ensure_import_table(conn) -> None:
@@ -164,6 +235,11 @@ def list_imports(limit: int = 25):
         return JSONResponse({"rows": out})
     finally:
         conn.close()
+
+
+@router.get("/imports/catalog")
+def imports_catalog():
+    return JSONResponse(build_source_catalog())
 
 
 @router.get("/imports/{import_id}")

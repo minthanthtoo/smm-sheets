@@ -489,6 +489,79 @@ tbody tr:nth-child(even) {
   background: rgba(245, 158, 11, 0.7);
 }
 
+.check-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.check-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  padding: 12px;
+  padding-right: 46px;
+  display: grid;
+  gap: 6px;
+  align-items: start;
+  position: relative;
+  box-shadow: var(--glow);
+}
+
+.check-input {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 18px;
+  height: 18px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.tag.core {
+  background: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+}
+
+.tag.regen {
+  background: rgba(56, 189, 248, 0.18);
+  color: #0c4a6e;
+}
+
+.tag.template {
+  background: rgba(245, 158, 11, 0.18);
+  color: #92400e;
+}
+
+.tag.missing {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+.catalog-card details + details {
+  margin-top: 10px;
+}
+
+.catalog-group {
+  margin-top: 10px;
+  display: grid;
+  gap: 6px;
+}
+
+.catalog-group-title {
+  font-weight: 600;
+  font-size: 13px;
+}
+
 .guide {
   padding: 16px;
   display: grid;
@@ -642,6 +715,41 @@ tbody tr:nth-child(even) {
   align-items: center;
 }
 
+.tab-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tab {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--muted);
+  padding: 8px 14px;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border 0.15s ease, background 0.15s ease;
+}
+
+.tab:hover {
+  transform: translateY(-1px);
+  border-color: rgba(15, 23, 42, 0.22);
+  color: var(--primary);
+}
+
+.tab.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: rgba(15, 23, 42, 0.7);
+  box-shadow: 0 12px 22px rgba(15, 23, 42, 0.22);
+}
+
+.tab:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3);
+}
+
 .filter-bar {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -764,6 +872,20 @@ tbody tr:nth-child(even) {
   .toolbar-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .tab-bar {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+
+  .tab {
+    white-space: nowrap;
+    scroll-snap-align: start;
   }
 
   .filter-bar,

@@ -329,6 +329,15 @@
       .summary { grid-template-columns: 1fr; }
       .mobile-bar { display: flex; gap: 10px; }
     }
+
+    @media (max-width: 760px) {
+      .controls { grid-template-columns: 1fr; }
+      .topbar-row { grid-template-columns: 1fr; }
+      .quick-grid { grid-template-columns: 1fr; }
+      .quick-entry .topbar-row {
+        align-items: flex-start;
+      }
+    }
   </style>
   <link rel="stylesheet" href="/static/ui.css" />
 </head>
@@ -471,7 +480,7 @@
       </dialog>
 
       <section class="quick-entry panel">
-        <div class="topbar-row" style="grid-template-columns: 1fr auto;">
+        <div class="topbar-row">
           <div>
             <strong>Quick Entry</strong>
             <div class="meta">Search outlet &amp; product. Packs/bottles auto‑convert to liters.</div>

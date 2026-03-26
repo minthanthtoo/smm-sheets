@@ -42,6 +42,50 @@ MONTHS = {
 }
 
 
+EXPORT_CATEGORIES = {
+    "individual_sales",
+    "sku_summary",
+    "township_summary",
+    "van_wise_sku",
+    "sales_compare",
+    "follow_up_sales",
+    "debtors",
+    "other",
+}
+
+
+def classify_template(filename: str) -> str:
+    name = norm_key(filename)
+    if "individual" in name:
+        return "individual_sales"
+    if "van wise" in name:
+        return "van_wise_sku"
+    if "sku summary" in name or "sku wise" in name or "sku analysis" in name:
+        return "sku_summary"
+    if "township summary" in name:
+        return "township_summary"
+    if "sales compare" in name or "compare for" in name or name.startswith("compare"):
+        return "sales_compare"
+    if "follow up" in name or "followup" in name or "fus" in name:
+        return "follow_up_sales"
+    if "debtor" in name:
+        return "debtors"
+    return "other"
+
+
+def normalize_filename(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", name.lower()).strip()
+
+
+def core_input_reason(filename: str) -> str | None:
+    key = normalize_filename(filename)
+    if "table" in key and ("dailysales" in key or "daily sales" in key):
+        return "Table + DailySales"
+    if "pg" in key and ("pg sales" in key or "pg daily sales" in key or "pg dailysales" in key):
+        return "PG Table + PGSales"
+    return None
+
+
 def prepare_in(root: Path, in_dir: Path) -> List[str]:
     in_dir.mkdir(parents=True, exist_ok=True)
     copied = []
@@ -576,8 +620,15 @@ def fill_van_wise(ws, van_agg, months_present: set, prod_alias_exact, prod_alias
                 safe_write(ws, r, lcol, vals.get("liter", 0.0), merge_map)
 
 
-def regenerate_templates(root: Path, in_dir: Path, out_dir: Path, clean_out: bool = True):
+def regenerate_templates(
+    root: Path,
+    in_dir: Path,
+    out_dir: Path,
+    clean_out: bool = True,
+    include: Optional[List[str]] = None,
+):
     staging_dir = out_dir / "staging"
+    include_set = set(i for i in (include or []) if i)
 
     def pick_master(name: str, fallback: str) -> List[Dict[str, str]]:
         master = staging_dir / name
@@ -611,22 +662,46 @@ def regenerate_templates(root: Path, in_dir: Path, out_dir: Path, clean_out: boo
         out_region = out_dir / region_id
         out_region.mkdir(parents=True, exist_ok=True)
         generated_names = set()
-        manifest = {"region": region_id, "files": []}
-        for orig in region.glob("*.xlsx"):
+        manifest = {"region": region_id, "files": [], "include": sorted(include_set) if include_set else []}
+        template_files = [
+            p for p in region.iterdir()
+            if p.is_file() and p.suffix.lower() in {".xlsx", ".xlsm"}
+        ]
+        for orig in sorted(template_files):
             name = orig.name.lower()
+            core_reason = core_input_reason(orig.name)
+            if core_reason:
+                manifest["files"].append({
+                    "file": orig.name,
+                    "status": "skipped",
+                    "generator": "core_input",
+                    "category": "core_input",
+                    "reason": core_reason,
+                })
+                continue
+            category = classify_template(orig.name)
+            if include_set and category not in include_set:
+                continue
             out_path = out_region / orig.name
             generated_names.add(orig.name)
 
-            wb = openpyxl.load_workbook(orig, data_only=False, read_only=False, keep_links=False)
+            keep_vba = orig.suffix.lower() == ".xlsm"
+            wb = openpyxl.load_workbook(
+                orig,
+                data_only=False,
+                read_only=False,
+                keep_links=False,
+                keep_vba=keep_vba,
+            )
 
             if "individual" in name:
                 for ws in wb.worksheets:
                     fill_individual_sales(ws, agg["ind"], agg["months_present"], outlet_alias_exact, outlet_alias_name)
-                manifest["files"].append({"file": orig.name, "status": "generated", "generator": "individual_sales"})
+                manifest["files"].append({"file": orig.name, "status": "generated", "generator": "individual_sales", "category": category})
             elif "sku summary" in name:
                 for ws in wb.worksheets:
                     fill_sku_summary(ws, agg["sku"], agg["months_present"], prod_alias_exact, prod_alias_name)
-                manifest["files"].append({"file": orig.name, "status": "generated", "generator": "sku_summary"})
+                manifest["files"].append({"file": orig.name, "status": "generated", "generator": "sku_summary", "category": category})
             elif "township summary" in name:
                 for ws in wb.worksheets:
                     header_row, _ = find_row_with_tokens(ws, ["township"], max_scan=5)
@@ -634,16 +709,16 @@ def regenerate_templates(root: Path, in_dir: Path, out_dir: Path, clean_out: boo
                         fill_township_summary(ws, agg["town"], agg["months_present"], outlet_alias_exact, outlet_alias_name)
                     else:
                         fill_township_detail(ws, agg["town_prod"], ws.title, agg["months_present"], prod_alias_exact, prod_alias_name)
-                manifest["files"].append({"file": orig.name, "status": "generated", "generator": "township_summary"})
+                manifest["files"].append({"file": orig.name, "status": "generated", "generator": "township_summary", "category": category})
             elif "van wise" in name:
                 for ws in wb.worksheets:
                     fill_van_wise(ws, agg["van"], agg["months_present"], prod_alias_exact, prod_alias_name)
-                manifest["files"].append({"file": orig.name, "status": "generated", "generator": "van_wise_sku"})
+                manifest["files"].append({"file": orig.name, "status": "generated", "generator": "van_wise_sku", "category": category})
             else:
                 # passthrough for templates we don't yet regenerate
                 wb.close()
                 shutil.copy2(orig, out_path)
-                manifest["files"].append({"file": orig.name, "status": "passthrough", "generator": ""})
+                manifest["files"].append({"file": orig.name, "status": "passthrough", "generator": "", "category": category})
                 continue
 
             wb.save(out_path)
@@ -655,7 +730,11 @@ def regenerate_templates(root: Path, in_dir: Path, out_dir: Path, clean_out: boo
 
         # enforce: out contains only generated files
         if clean_out:
-            for existing in out_region.glob("*.xlsx"):
+            existing_files = [
+                p for p in out_region.iterdir()
+                if p.is_file() and p.suffix.lower() in {".xlsx", ".xlsm"}
+            ]
+            for existing in existing_files:
                 if existing.name not in generated_names:
                     existing.unlink()
 
@@ -674,6 +753,7 @@ def main() -> None:
     parser.add_argument("--out-dir", default="out")
     parser.add_argument("--skip-prepare", action="store_true")
     parser.add_argument("--no-clean", action="store_true", help="Do not remove non-generated files from out/<region>")
+    parser.add_argument("--include", default="", help="Comma-separated export categories to include")
     args = parser.parse_args()
 
     root = Path(args.root_dir).resolve()
@@ -683,7 +763,8 @@ def main() -> None:
     if not args.skip_prepare:
         prepare_in(root, in_dir)
 
-    regenerate_templates(root, in_dir, out_dir, clean_out=not args.no_clean)
+    include = [p.strip() for p in str(args.include).split(",") if p.strip()]
+    regenerate_templates(root, in_dir, out_dir, clean_out=not args.no_clean, include=include or None)
 
 
 if __name__ == "__main__":
