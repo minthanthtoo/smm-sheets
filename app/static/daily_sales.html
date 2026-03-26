@@ -364,7 +364,8 @@
               <span id="meta-route">Route: -</span>
             </div>
           </div>
-          <div style="display:flex; gap:8px; align-items:center;">
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+            <button id="open-guide" class="btn ghost" type="button">Guide</button>
             <span class="chip draft">Draft</span>
             <span class="chip sync">Last sync just now</span>
           </div>
@@ -393,7 +394,8 @@
         </div>
       </section>
 
-      <section class="panel guide">
+      <dialog class="guide-dialog" id="guide-dialog">
+        <div class="panel guide">
         <div class="guide-header">
           <div class="guide-title">
             <h3 style="margin:0;">Daily Entry Flow</h3>
@@ -402,6 +404,7 @@
           <div class="guide-actions">
             <span class="pill">Auto‑convert liters</span>
             <span class="pill">Draft safe</span>
+            <button class="btn ghost dialog-close" data-dialog-close type="button">Close</button>
           </div>
         </div>
         <div class="guide-steps">
@@ -446,7 +449,8 @@
             </div>
           </div>
         </details>
-      </section>
+        </div>
+      </dialog>
 
       <section class="quick-entry panel">
         <div class="topbar-row" style="grid-template-columns: 1fr auto;">
@@ -610,6 +614,8 @@
     const txnChannelFilter = document.getElementById("txn-channel-filter");
     const txnCount = document.getElementById("txn-count");
     const txnEmpty = document.getElementById("txn-empty");
+    const guideDialog = document.getElementById("guide-dialog");
+    const openGuide = document.getElementById("open-guide");
 
     const qeOutlet = document.getElementById("qe-outlet");
     const qeProduct = document.getElementById("qe-product");
@@ -872,6 +878,16 @@
     qeOutlet.addEventListener("change", updateOutletCard);
     txnSearch.addEventListener("input", applyTxnFilter);
     txnChannelFilter.addEventListener("change", applyTxnFilter);
+
+    if (guideDialog && openGuide) {
+      openGuide.addEventListener("click", () => guideDialog.showModal());
+      guideDialog.addEventListener("click", (event) => {
+        if (event.target === guideDialog) guideDialog.close();
+      });
+      guideDialog.querySelectorAll("[data-dialog-close]").forEach((btn) => {
+        btn.addEventListener("click", () => guideDialog.close());
+      });
+    }
 
     dateInput.value = today();
     document.getElementById("meta-date").textContent = dateInput.value;

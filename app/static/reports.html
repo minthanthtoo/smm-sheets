@@ -259,6 +259,7 @@
             </div>
           </div>
           <div class="action-row">
+            <button id="open-guide" class="btn ghost" type="button">Guide</button>
             <a id="export-link" class="btn ghost" href="#">Export CSV</a>
             <button id="export-excel" class="btn">Export Excel</button>
           </div>
@@ -300,7 +301,8 @@
         </div>
       </section>
 
-      <section class="panel guide">
+      <dialog class="guide-dialog" id="guide-dialog">
+        <div class="panel guide">
         <div class="guide-header">
           <div class="guide-title">
             <h3 style="margin:0;">Reporting Flow</h3>
@@ -309,6 +311,7 @@
           <div class="guide-actions">
             <span class="pill">Auto‑regen</span>
             <span class="pill">Excel ready</span>
+            <button class="btn ghost dialog-close" data-dialog-close type="button">Close</button>
           </div>
         </div>
         <div class="guide-steps">
@@ -353,7 +356,8 @@
             </div>
           </div>
         </details>
-      </section>
+        </div>
+      </dialog>
 
       <section class="panel" style="padding: 16px;">
         <div class="kpis">
@@ -443,6 +447,8 @@
     const exportSearch = document.getElementById('export-search');
     const exportCount = document.getElementById('export-count');
     const exportEmpty = document.getElementById('export-empty');
+    const guideDialog = document.getElementById('guide-dialog');
+    const openGuide = document.getElementById('open-guide');
     let exportRows = [];
 
     function today() {
@@ -582,6 +588,16 @@
     exportExcelBtn.addEventListener('click', exportExcel);
     exportSearch.addEventListener('input', renderExportHistory);
     exportHistoryRefresh.addEventListener('click', loadExportHistory);
+
+    if (guideDialog && openGuide) {
+      openGuide.addEventListener('click', () => guideDialog.showModal());
+      guideDialog.addEventListener('click', (event) => {
+        if (event.target === guideDialog) guideDialog.close();
+      });
+      guideDialog.querySelectorAll('[data-dialog-close]').forEach((btn) => {
+        btn.addEventListener('click', () => guideDialog.close());
+      });
+    }
   </script>
 </body>
 </html>

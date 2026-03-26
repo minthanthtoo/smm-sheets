@@ -313,11 +313,19 @@
 
     <main class="main">
       <section class="panel header">
-        <h2 class="title">Outlet Master</h2>
-        <div class="meta">Manage outlets, update type/route with effective dates.</div>
+        <div class="toolbar">
+          <div class="toolbar-title">
+            <h2 class="title">Outlet Master</h2>
+            <div class="meta">Manage outlets, update type/route with effective dates.</div>
+          </div>
+          <div class="toolbar-actions">
+            <button id="open-guide" class="btn ghost" type="button">Guide</button>
+          </div>
+        </div>
       </section>
 
-      <section class="panel guide">
+      <dialog class="guide-dialog" id="guide-dialog">
+        <div class="panel guide">
         <div class="guide-header">
           <div class="guide-title">
             <h3 style="margin:0;">Outlet Workflow</h3>
@@ -326,6 +334,7 @@
           <div class="guide-actions">
             <span class="pill">History aware</span>
             <span class="pill">Dedupe ready</span>
+            <button class="btn ghost dialog-close" data-dialog-close type="button">Close</button>
           </div>
         </div>
         <div class="guide-steps">
@@ -370,7 +379,8 @@
             </div>
           </div>
         </details>
-      </section>
+        </div>
+      </dialog>
 
       <section class="panel detail">
         <div class="detail-grid">
@@ -423,6 +433,8 @@
     const outletCount = document.getElementById('outlet-count');
     const outletEmpty = document.getElementById('outlet-empty');
     const dedupeCount = document.getElementById('dedupe-count');
+    const guideDialog = document.getElementById('guide-dialog');
+    const openGuide = document.getElementById('open-guide');
     const nameMm = document.getElementById('name-mm');
     const nameEn = document.getElementById('name-en');
     const typeEl = document.getElementById('type');
@@ -577,6 +589,16 @@
     document.getElementById('refresh').addEventListener('click', loadOutlets);
     searchEl.addEventListener('input', renderList);
     typeFilter.addEventListener('change', renderList);
+
+    if (guideDialog && openGuide) {
+      openGuide.addEventListener('click', () => guideDialog.showModal());
+      guideDialog.addEventListener('click', (event) => {
+        if (event.target === guideDialog) guideDialog.close();
+      });
+      guideDialog.querySelectorAll('[data-dialog-close]').forEach((btn) => {
+        btn.addEventListener('click', () => guideDialog.close());
+      });
+    }
 
     loadOutlets();
     loadDedupe();

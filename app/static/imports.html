@@ -298,7 +298,8 @@
               <span class="myanmar">စာရင်းဖိုင်များ တင်သွင်းခြင်း</span>
             </div>
           </div>
-          <div>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+            <button id="open-guide" class="btn ghost" type="button">Guide</button>
             <button id="import-btn" class="btn">Run Import</button>
           </div>
         </div>
@@ -320,7 +321,8 @@
         </div>
       </section>
 
-      <section class="panel guide">
+      <dialog class="guide-dialog" id="guide-dialog">
+        <div class="panel guide">
         <div class="guide-header">
           <div class="guide-title">
             <h3 style="margin:0;">Import Guide</h3>
@@ -329,6 +331,7 @@
           <div class="guide-actions">
             <span class="pill">Accepted: .xlsx · .xlsm</span>
             <span class="pill">Region Auto-Detect</span>
+            <button class="btn ghost dialog-close" data-dialog-close type="button">Close</button>
           </div>
         </div>
 
@@ -427,7 +430,8 @@
         <div class="guide-footnote">
           Tip: Save spreadsheets with values (data-only). If a header row can't be detected, that sheet is skipped.
         </div>
-      </section>
+        </div>
+      </dialog>
 
       <section class="panel" style="padding: 16px;">
         <div class="toolbar">
@@ -477,6 +481,8 @@
     const importsStatus = document.getElementById('imports-status');
     const importsCount = document.getElementById('imports-count');
     const importsEmpty = document.getElementById('imports-empty');
+    const guideDialog = document.getElementById('guide-dialog');
+    const openGuide = document.getElementById('open-guide');
 
     let importsRows = [];
 
@@ -573,6 +579,16 @@
     importsStatus.addEventListener('change', renderImports);
     refreshBtn.addEventListener('click', loadImports);
     importBtn.addEventListener('click', runImport);
+
+    if (guideDialog && openGuide) {
+      openGuide.addEventListener('click', () => guideDialog.showModal());
+      guideDialog.addEventListener('click', (event) => {
+        if (event.target === guideDialog) guideDialog.close();
+      });
+      guideDialog.querySelectorAll('[data-dialog-close]').forEach((btn) => {
+        btn.addEventListener('click', () => guideDialog.close());
+      });
+    }
 
     loadRegions();
     loadImports();

@@ -458,6 +458,26 @@ tbody tr:nth-child(even) {
   gap: 14px;
 }
 
+.guide-dialog {
+  border: none;
+  padding: 0;
+  background: transparent;
+  width: min(860px, 92vw);
+}
+
+.guide-dialog::backdrop {
+  background: rgba(12, 20, 24, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.guide-dialog .guide {
+  margin: 0;
+}
+
+.dialog-close {
+  margin-left: auto;
+}
+
 .guide-header {
   display: flex;
   align-items: center;
@@ -564,6 +584,19 @@ tbody tr:nth-child(even) {
   margin-top: 10px;
 }
 
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.stack-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .search-input {
   width: 100%;
   padding: 10px 12px;
@@ -647,6 +680,28 @@ tbody tr:nth-child(even) {
   table th,
   table td {
     padding: 8px 10px;
+  }
+
+  .toolbar-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .filter-bar,
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  .stack-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

@@ -235,9 +235,13 @@
           <label class="field">Limit <input id="q-limit" value="200" /></label>
           <label class="field"><span>&nbsp;</span><button id="q-load" class="btn" type="button">Load Issues</button></label>
         </div>
+        <div class="toolbar-actions" style="justify-content:flex-end;">
+          <button id="open-guide" class="btn ghost" type="button">Guide</button>
+        </div>
       </section>
 
-      <section class="panel guide">
+      <dialog class="guide-dialog" id="guide-dialog">
+        <div class="panel guide">
         <div class="guide-header">
           <div class="guide-title">
             <h3 style="margin:0;">Quality Fix Flow</h3>
@@ -246,6 +250,7 @@
           <div class="guide-actions">
             <span class="pill">Audit trail</span>
             <span class="pill">Bulk ready</span>
+            <button class="btn ghost dialog-close" data-dialog-close type="button">Close</button>
           </div>
         </div>
         <div class="guide-steps">
@@ -290,7 +295,8 @@
             </div>
           </div>
         </details>
-      </section>
+        </div>
+      </dialog>
 
       <section class="panel" style="padding: 16px;">
         <div class="grid-2">
@@ -341,6 +347,8 @@
     const issueSearch = document.getElementById('issue-search');
     const issueCount = document.getElementById('issue-count');
     const issueEmpty = document.getElementById('issue-empty');
+    const guideDialog = document.getElementById('guide-dialog');
+    const openGuide = document.getElementById('open-guide');
     let issueRows = [];
 
     function today() {
@@ -420,6 +428,16 @@
     document.getElementById('q-end').value = today();
     issueSearch.addEventListener('input', renderIssues);
     document.getElementById('q-load').addEventListener('click', loadIssues);
+
+    if (guideDialog && openGuide) {
+      openGuide.addEventListener('click', () => guideDialog.showModal());
+      guideDialog.addEventListener('click', (event) => {
+        if (event.target === guideDialog) guideDialog.close();
+      });
+      guideDialog.querySelectorAll('[data-dialog-close]').forEach((btn) => {
+        btn.addEventListener('click', () => guideDialog.close());
+      });
+    }
     document.getElementById('fix-btn').addEventListener('click', applyFix);
     loadIssues();
   </script>

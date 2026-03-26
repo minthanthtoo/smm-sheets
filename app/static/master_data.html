@@ -232,9 +232,13 @@
           </label>
           <label class="field"><span>&nbsp;</span><button id="md-refresh" class="btn ghost" type="button">Reload Lists</button></label>
         </div>
+        <div class="toolbar-actions" style="justify-content:flex-end;">
+          <button id="open-guide" class="btn ghost" type="button">Guide</button>
+        </div>
       </section>
 
-      <section class="panel guide">
+      <dialog class="guide-dialog" id="guide-dialog">
+        <div class="panel guide">
         <div class="guide-header">
           <div class="guide-title">
             <h3 style="margin:0;">Master Data Flow</h3>
@@ -243,6 +247,7 @@
           <div class="guide-actions">
             <span class="pill">History enabled</span>
             <span class="pill">Region filter</span>
+            <button class="btn ghost dialog-close" data-dialog-close type="button">Close</button>
           </div>
         </div>
         <div class="guide-steps">
@@ -287,7 +292,8 @@
             </div>
           </div>
         </details>
-      </section>
+        </div>
+      </dialog>
 
       <section class="panel section">
         <h3>Products</h3>
@@ -304,7 +310,7 @@
           <label class="field">ML/Bottle <input id="prod-mlb" /></label>
           <label class="field"><span>&nbsp;</span><button id="prod-save" class="btn" type="button">Save Product</button></label>
         </div>
-        <div style="display:flex; gap:12px; align-items:center;">
+        <div class="stack-row">
           <input id="prod-history-id" placeholder="Product ID for history" />
           <input id="prod-hist-from" type="date" />
           <input id="prod-hist-to" type="date" />
@@ -342,7 +348,7 @@
           <label class="field">Aliases <input id="town-alias" /></label>
           <label class="field"><span>&nbsp;</span><button id="town-save" class="btn" type="button">Save Township</button></label>
         </div>
-        <div style="display:flex; gap:12px; align-items:center;">
+        <div class="stack-row">
           <input id="town-history-id" placeholder="Township ID for history" />
           <input id="town-hist-from" type="date" />
           <input id="town-hist-to" type="date" />
@@ -380,7 +386,7 @@
           <label class="field">Township ID <input id="route-township" /></label>
           <label class="field"><span>&nbsp;</span><button id="route-save" class="btn" type="button">Save Route</button></label>
         </div>
-        <div style="display:flex; gap:12px; align-items:center;">
+        <div class="stack-row">
           <input id="route-history-id" placeholder="Route ID for history" />
           <input id="route-hist-from" type="date" />
           <input id="route-hist-to" type="date" />
@@ -423,7 +429,7 @@
           <label class="field">Total Planned <input id="pjp-total" /></label>
           <label class="field"><span>&nbsp;</span><button id="pjp-save" class="btn" type="button">Save Plan</button></label>
         </div>
-        <div style="display:flex; gap:12px; align-items:center;">
+        <div class="stack-row">
           <input id="pjp-filter-date" type="date" />
           <button id="pjp-load" class="btn ghost" type="button">Load Plans</button>
         </div>
@@ -469,6 +475,8 @@
     const townEmpty = document.getElementById('town-empty');
     const routeEmpty = document.getElementById('route-empty');
     const pjpEmpty = document.getElementById('pjp-empty');
+    const guideDialog = document.getElementById('guide-dialog');
+    const openGuide = document.getElementById('open-guide');
 
     function filterTable(bodyEl, query, countEl, emptyEl) {
       const q = (query || '').toLowerCase().trim();
@@ -724,6 +732,16 @@
       loadTownships();
       loadRoutes();
     });
+
+    if (guideDialog && openGuide) {
+      openGuide.addEventListener('click', () => guideDialog.showModal());
+      guideDialog.addEventListener('click', (event) => {
+        if (event.target === guideDialog) guideDialog.close();
+      });
+      guideDialog.querySelectorAll('[data-dialog-close]').forEach((btn) => {
+        btn.addEventListener('click', () => guideDialog.close());
+      });
+    }
 
     loadRegions();
     loadProducts();
