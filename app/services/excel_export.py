@@ -59,6 +59,11 @@ def build_export_zip(out_dir: Path, region: str | None) -> Path:
             for xlsx in sorted(rdir.glob("*.xlsx")):
                 arcname = f"{rdir.name}/{xlsx.name}"
                 zf.write(xlsx, arcname)
+        staging_dir = out_dir / "staging"
+        if staging_dir.exists():
+            for csv_path in sorted(staging_dir.glob("*.csv")):
+                arcname = f"staging/{csv_path.name}"
+                zf.write(csv_path, arcname)
     return zip_path
 
 
