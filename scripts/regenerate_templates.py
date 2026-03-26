@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import json
 import re
 import shutil
 from collections import defaultdict
@@ -595,6 +596,7 @@ def regenerate_templates(root: Path, in_dir: Path, out_dir: Path, clean_out: boo
 
     # per region output
     template_root = root / "source"
+    manifest_all = []
     for region in sorted([p for p in template_root.iterdir() if p.is_dir()]):
         region_id = region.name.upper()
         agg = aggs.get(region_id)
@@ -609,10 +611,9 @@ def regenerate_templates(root: Path, in_dir: Path, out_dir: Path, clean_out: boo
         out_region = out_dir / region_id
         out_region.mkdir(parents=True, exist_ok=True)
         generated_names = set()
+        manifest = {"region": region_id, "files": []}
         for orig in region.glob("*.xlsx"):
             name = orig.name.lower()
-            if not any(k in name for k in ("individual", "sku summary", "township summary", "van wise")):
-                continue
             out_path = out_region / orig.name
             generated_names.add(orig.name)
 
@@ -621,9 +622,11 @@ def regenerate_templates(root: Path, in_dir: Path, out_dir: Path, clean_out: boo
             if "individual" in name:
                 for ws in wb.worksheets:
                     fill_individual_sales(ws, agg["ind"], agg["months_present"], outlet_alias_exact, outlet_alias_name)
+                manifest["files"].append({"file": orig.name, "status": "generated", "generator": "individual_sales"})
             elif "sku summary" in name:
                 for ws in wb.worksheets:
                     fill_sku_summary(ws, agg["sku"], agg["months_present"], prod_alias_exact, prod_alias_name)
+                manifest["files"].append({"file": orig.name, "status": "generated", "generator": "sku_summary"})
             elif "township summary" in name:
                 for ws in wb.worksheets:
                     header_row, _ = find_row_with_tokens(ws, ["township"], max_scan=5)
@@ -631,18 +634,37 @@ def regenerate_templates(root: Path, in_dir: Path, out_dir: Path, clean_out: boo
                         fill_township_summary(ws, agg["town"], agg["months_present"], outlet_alias_exact, outlet_alias_name)
                     else:
                         fill_township_detail(ws, agg["town_prod"], ws.title, agg["months_present"], prod_alias_exact, prod_alias_name)
+                manifest["files"].append({"file": orig.name, "status": "generated", "generator": "township_summary"})
             elif "van wise" in name:
                 for ws in wb.worksheets:
                     fill_van_wise(ws, agg["van"], agg["months_present"], prod_alias_exact, prod_alias_name)
+                manifest["files"].append({"file": orig.name, "status": "generated", "generator": "van_wise_sku"})
+            else:
+                # passthrough for templates we don't yet regenerate
+                wb.close()
+                shutil.copy2(orig, out_path)
+                manifest["files"].append({"file": orig.name, "status": "passthrough", "generator": ""})
+                continue
 
             wb.save(out_path)
             wb.close()
+
+        manifest_path = out_region / "_regeneration_manifest.json"
+        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+        manifest_all.append(manifest)
 
         # enforce: out contains only generated files
         if clean_out:
             for existing in out_region.glob("*.xlsx"):
                 if existing.name not in generated_names:
                     existing.unlink()
+
+    # write top-level manifest
+    if manifest_all:
+        (out_dir / "regeneration_manifest.json").write_text(
+            json.dumps({"regions": manifest_all}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
 
 
 def main() -> None:

@@ -96,14 +96,22 @@ def classify_sheet(ws) -> Dict:
     }
 
 
-def scan_paths(paths: List[Path]) -> List[Dict]:
+def scan_paths(paths: List[Path], root: Path | None = None) -> List[Dict]:
     report = []
     for path in paths:
         wb = openpyxl.load_workbook(path, data_only=True, read_only=True, keep_links=False)
         for ws in wb.worksheets:
             info = classify_sheet(ws)
+            relpath = None
+            if root:
+                try:
+                    relpath = str(path.relative_to(root))
+                except Exception:
+                    relpath = None
             report.append({
                 "file": path.name,
+                "path": str(path),
+                "relpath": relpath,
                 "sheet": ws.title,
                 **info,
             })
@@ -118,15 +126,9 @@ def main() -> None:
     args = parser.parse_args()
 
     root = Path(args.root).resolve()
-    candidates = []
-    for sub in ("in", "source", "files"):
-        base = root / sub
-        if base.exists():
-            candidates.extend(base.rglob("*.xlsx"))
-            candidates.extend(base.rglob("*.xlsm"))
-    candidates = sorted(set(candidates))
+    candidates = sorted(set(root.rglob("*.xlsx")).union(set(root.rglob("*.xlsm"))))
 
-    report = scan_paths(candidates)
+    report = scan_paths(candidates, root=root)
     payload = {
         "files_scanned": len(candidates),
         "sheets_scanned": len(report),
