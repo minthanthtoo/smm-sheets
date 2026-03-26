@@ -300,6 +300,61 @@
         </div>
       </section>
 
+      <section class="panel guide">
+        <div class="guide-header">
+          <div class="guide-title">
+            <h3 style="margin:0;">Reporting Flow</h3>
+            <div class="meta">Filter, review KPIs, then export or regen templates.</div>
+          </div>
+          <div class="guide-actions">
+            <span class="pill">Auto‑regen</span>
+            <span class="pill">Excel ready</span>
+          </div>
+        </div>
+        <div class="guide-steps">
+          <div class="guide-step">
+            <div class="step-badge">1</div>
+            <div>
+              <strong>Set filters</strong>
+              <div class="meta">Pick date range, report type, and channel.</div>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-badge">2</div>
+            <div>
+              <strong>Review KPIs</strong>
+              <div class="meta">Confirm totals before export.</div>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-badge">3</div>
+            <div>
+              <strong>Export</strong>
+              <div class="meta">Download Excel or CSV outputs.</div>
+            </div>
+          </div>
+        </div>
+        <details class="details-panel">
+          <summary>Advanced tips</summary>
+          <div class="info-grid" style="margin-top:12px;">
+            <div class="info-card">
+              <strong>Regen templates</strong>
+              <ul class="info-list">
+                <li>Use “Export Excel” for auto‑filled templates.</li>
+                <li>Check export history for prior runs.</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <strong>Accuracy</strong>
+              <ul class="info-list">
+                <li>Refresh after new imports.</li>
+                <li>Match region filter with filename patterns.</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+      </section>
+
       <section class="panel" style="padding: 16px;">
         <div class="kpis">
           <div class="kpi">
@@ -347,9 +402,16 @@
       </section>
 
       <section class="panel" style="padding: 16px;">
-        <div class="topbar-row" style="margin-bottom: 10px;">
-          <h3 style="margin:0;">Export History</h3>
-          <button id="export-history-refresh" class="btn ghost" type="button">Refresh</button>
+        <div class="toolbar" style="margin-bottom: 10px;">
+          <div class="toolbar-title">
+            <h3 style="margin:0;">Export History</h3>
+            <div class="meta">Track recent exports and download files.</div>
+          </div>
+          <div class="toolbar-actions">
+            <span class="count-badge" id="export-count">0 rows</span>
+            <input id="export-search" class="search-input" type="search" placeholder="Search region or status" />
+            <button id="export-history-refresh" class="btn ghost" type="button">Refresh</button>
+          </div>
         </div>
         <table style="width:100%; border-collapse: collapse; font-size:14px;">
           <thead>
@@ -364,6 +426,7 @@
           </thead>
           <tbody id="export-history-body"></tbody>
         </table>
+        <div id="export-empty" class="table-empty" style="display:none;">No export history matches this filter.</div>
       </section>
     </main>
   </div>
@@ -377,6 +440,10 @@
     const regionSelect = document.getElementById('region-select');
     const exportHistoryBody = document.getElementById('export-history-body');
     const exportHistoryRefresh = document.getElementById('export-history-refresh');
+    const exportSearch = document.getElementById('export-search');
+    const exportCount = document.getElementById('export-count');
+    const exportEmpty = document.getElementById('export-empty');
+    let exportRows = [];
 
     function today() {
       const d = new Date();
@@ -415,11 +482,19 @@
       return val.replace('T', ' ').slice(0, 19);
     }
 
-    async function loadExportHistory() {
-      const res = await fetch('/api/reports/export_history?limit=20');
-      const data = await res.json();
+    function renderExportHistory() {
+      const query = (exportSearch.value || '').toLowerCase().trim();
+      const rows = (exportRows || []).filter((row) => {
+        if (!query) return true;
+        const haystack = [
+          row.region || '',
+          row.status || '',
+          row.export_id || ''
+        ].join(' ').toLowerCase();
+        return haystack.includes(query);
+      });
       exportHistoryBody.innerHTML = '';
-      (data.rows || []).forEach((row) => {
+      rows.forEach((row) => {
         const tr = document.createElement('tr');
         const download = row.status === 'success'
           ? `<a class="btn ghost" href="/api/reports/export_download?export_id=${row.export_id}">Download</a>`
@@ -434,6 +509,15 @@
         `;
         exportHistoryBody.appendChild(tr);
       });
+      exportCount.textContent = `${rows.length} rows`;
+      exportEmpty.style.display = rows.length ? 'none' : 'block';
+    }
+
+    async function loadExportHistory() {
+      const res = await fetch('/api/reports/export_history?limit=20');
+      const data = await res.json();
+      exportRows = data.rows || [];
+      renderExportHistory();
     }
 
     async function loadRegions() {
@@ -496,6 +580,7 @@
     startEl.addEventListener('change', () => { loadSummary(); loadQuality(); });
     endEl.addEventListener('change', () => { loadSummary(); loadQuality(); });
     exportExcelBtn.addEventListener('click', exportExcel);
+    exportSearch.addEventListener('input', renderExportHistory);
     exportHistoryRefresh.addEventListener('click', loadExportHistory);
   </script>
 </body>

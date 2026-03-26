@@ -237,10 +237,74 @@
         </div>
       </section>
 
+      <section class="panel guide">
+        <div class="guide-header">
+          <div class="guide-title">
+            <h3 style="margin:0;">Quality Fix Flow</h3>
+            <div class="meta">Find issues fast and apply clean corrections.</div>
+          </div>
+          <div class="guide-actions">
+            <span class="pill">Audit trail</span>
+            <span class="pill">Bulk ready</span>
+          </div>
+        </div>
+        <div class="guide-steps">
+          <div class="guide-step">
+            <div class="step-badge">1</div>
+            <div>
+              <strong>Filter issues</strong>
+              <div class="meta">Select date range and issue type.</div>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-badge">2</div>
+            <div>
+              <strong>Select row</strong>
+              <div class="meta">Click an issue row to load details.</div>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-badge">3</div>
+            <div>
+              <strong>Apply fix</strong>
+              <div class="meta">Edit values and save to update the record.</div>
+            </div>
+          </div>
+        </div>
+        <details class="details-panel">
+          <summary>Advanced tips</summary>
+          <div class="info-grid" style="margin-top:12px;">
+            <div class="info-card">
+              <strong>Speed</strong>
+              <ul class="info-list">
+                <li>Use a smaller limit for faster load.</li>
+                <li>Fix one issue type at a time.</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <strong>Accuracy</strong>
+              <ul class="info-list">
+                <li>Verify outlet/product IDs before saving.</li>
+                <li>Re‑load issues after a batch of fixes.</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+      </section>
+
       <section class="panel" style="padding: 16px;">
         <div class="grid-2">
           <div>
-            <h3 style="margin:0 0 10px;">Issue Rows</h3>
+            <div class="toolbar" style="margin-bottom:10px;">
+              <div class="toolbar-title">
+                <h3 style="margin:0;">Issue Rows</h3>
+                <div class="meta">Search by outlet, product, route, or txn.</div>
+              </div>
+              <div class="toolbar-actions">
+                <span class="count-badge" id="issue-count">0 rows</span>
+                <input id="issue-search" class="search-input" type="search" placeholder="Search issues" />
+              </div>
+            </div>
             <table>
               <thead>
                 <tr>
@@ -253,6 +317,7 @@
               </thead>
               <tbody id="issue-body"></tbody>
             </table>
+            <div id="issue-empty" class="table-empty" style="display:none;">No issues match this filter.</div>
           </div>
           <div>
             <h3 style="margin:0 0 10px;">Fix Selected</h3>
@@ -273,22 +338,33 @@
 
   <script>
     const issueBody = document.getElementById('issue-body');
+    const issueSearch = document.getElementById('issue-search');
+    const issueCount = document.getElementById('issue-count');
+    const issueEmpty = document.getElementById('issue-empty');
+    let issueRows = [];
 
     function today() {
       const d = new Date();
       return d.toISOString().slice(0, 10);
     }
 
-    async function loadIssues() {
-      const start = document.getElementById('q-start').value;
-      const end = document.getElementById('q-end').value;
-      const kind = document.getElementById('q-kind').value;
-      const limit = document.getElementById('q-limit').value || '200';
-      const url = `/api/quality/issues?kind=${kind}&start=${start}&end=${end}&limit=${limit}`;
-      const res = await fetch(url);
-      const data = await res.json();
+    function renderIssues() {
+      const query = (issueSearch.value || '').toLowerCase().trim();
+      const rows = (issueRows || []).filter((row) => {
+        if (!query) return true;
+        const haystack = [
+          row.txn_id,
+          row.date,
+          row.outlet_name_raw,
+          row.outlet_id,
+          row.stock_name_raw,
+          row.product_id,
+          row.route_id
+        ].filter(Boolean).join(' ').toLowerCase();
+        return haystack.includes(query);
+      });
       issueBody.innerHTML = '';
-      (data.rows || []).forEach((row) => {
+      rows.forEach((row) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${row.txn_id}</td>
@@ -303,6 +379,20 @@
         });
         issueBody.appendChild(tr);
       });
+      issueCount.textContent = `${rows.length} rows`;
+      issueEmpty.style.display = rows.length ? 'none' : 'block';
+    }
+
+    async function loadIssues() {
+      const start = document.getElementById('q-start').value;
+      const end = document.getElementById('q-end').value;
+      const kind = document.getElementById('q-kind').value;
+      const limit = document.getElementById('q-limit').value || '200';
+      const url = `/api/quality/issues?kind=${kind}&start=${start}&end=${end}&limit=${limit}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      issueRows = data.rows || [];
+      renderIssues();
     }
 
     async function applyFix() {
@@ -328,6 +418,7 @@
 
     document.getElementById('q-start').value = today();
     document.getElementById('q-end').value = today();
+    issueSearch.addEventListener('input', renderIssues);
     document.getElementById('q-load').addEventListener('click', loadIssues);
     document.getElementById('fix-btn').addEventListener('click', applyFix);
     loadIssues();

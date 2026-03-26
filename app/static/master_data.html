@@ -234,6 +234,61 @@
         </div>
       </section>
 
+      <section class="panel guide">
+        <div class="guide-header">
+          <div class="guide-title">
+            <h3 style="margin:0;">Master Data Flow</h3>
+            <div class="meta">Add core data safely with history tracking.</div>
+          </div>
+          <div class="guide-actions">
+            <span class="pill">History enabled</span>
+            <span class="pill">Region filter</span>
+          </div>
+        </div>
+        <div class="guide-steps">
+          <div class="guide-step">
+            <div class="step-badge">1</div>
+            <div>
+              <strong>Refresh lists</strong>
+              <div class="meta">Load latest products, townships, routes, and PJP.</div>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-badge">2</div>
+            <div>
+              <strong>Edit or add</strong>
+              <div class="meta">Save updates using the correct section below.</div>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-badge">3</div>
+            <div>
+              <strong>Track changes</strong>
+              <div class="meta">Use history to keep pricing/route changes auditable.</div>
+            </div>
+          </div>
+        </div>
+        <details class="details-panel">
+          <summary>Advanced tips</summary>
+          <div class="info-grid" style="margin-top:12px;">
+            <div class="info-card">
+              <strong>Products</strong>
+              <ul class="info-list">
+                <li>Use history for price/pack updates.</li>
+                <li>Keep ML and pack size consistent.</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <strong>PJP</strong>
+              <ul class="info-list">
+                <li>Plan routes by date for accuracy.</li>
+                <li>Reload after bulk edits.</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+      </section>
+
       <section class="panel section">
         <h3>Products</h3>
         <div class="controls">
@@ -259,10 +314,21 @@
           <button id="prod-hist-save" class="btn ghost" type="button">Add History</button>
           <button id="prod-hist-load" class="btn ghost" type="button">Load History</button>
         </div>
+        <div class="toolbar" style="margin-top:12px;">
+          <div class="toolbar-title">
+            <strong>Product List</strong>
+            <div class="meta">Search by ID or name.</div>
+          </div>
+          <div class="toolbar-actions">
+            <span class="count-badge" id="prod-count">0 rows</span>
+            <input id="prod-search" class="search-input" type="search" placeholder="Search products" />
+          </div>
+        </div>
         <table>
           <thead><tr><th>ID</th><th>Name</th><th>ML</th><th>Packing</th><th>Price</th></tr></thead>
           <tbody id="prod-body"></tbody>
         </table>
+        <div id="prod-empty" class="table-empty" style="display:none;">No products match this filter.</div>
         <div id="prod-history" style="font-size:13px; color:var(--muted);"></div>
       </section>
 
@@ -285,10 +351,21 @@
           <button id="town-hist-save" class="btn ghost" type="button">Add History</button>
           <button id="town-hist-load" class="btn ghost" type="button">Load History</button>
         </div>
+        <div class="toolbar" style="margin-top:12px;">
+          <div class="toolbar-title">
+            <strong>Township List</strong>
+            <div class="meta">Filter by name or ID.</div>
+          </div>
+          <div class="toolbar-actions">
+            <span class="count-badge" id="town-count">0 rows</span>
+            <input id="town-search" class="search-input" type="search" placeholder="Search townships" />
+          </div>
+        </div>
         <table>
           <thead><tr><th>ID</th><th>Name</th><th>Region</th></tr></thead>
           <tbody id="town-body"></tbody>
         </table>
+        <div id="town-empty" class="table-empty" style="display:none;">No townships match this filter.</div>
         <div id="town-history" style="font-size:13px; color:var(--muted);"></div>
       </section>
 
@@ -315,10 +392,21 @@
           <button id="route-hist-save" class="btn ghost" type="button">Add History</button>
           <button id="route-hist-load" class="btn ghost" type="button">Load History</button>
         </div>
+        <div class="toolbar" style="margin-top:12px;">
+          <div class="toolbar-title">
+            <strong>Route List</strong>
+            <div class="meta">Search by route or van.</div>
+          </div>
+          <div class="toolbar-actions">
+            <span class="count-badge" id="route-count">0 rows</span>
+            <input id="route-search" class="search-input" type="search" placeholder="Search routes" />
+          </div>
+        </div>
         <table>
           <thead><tr><th>ID</th><th>Name</th><th>Region</th><th>Van</th></tr></thead>
           <tbody id="route-body"></tbody>
         </table>
+        <div id="route-empty" class="table-empty" style="display:none;">No routes match this filter.</div>
         <div id="route-history" style="font-size:13px; color:var(--muted);"></div>
       </section>
 
@@ -339,10 +427,21 @@
           <input id="pjp-filter-date" type="date" />
           <button id="pjp-load" class="btn ghost" type="button">Load Plans</button>
         </div>
+        <div class="toolbar" style="margin-top:12px;">
+          <div class="toolbar-title">
+            <strong>PJP List</strong>
+            <div class="meta">Filter by route or date.</div>
+          </div>
+          <div class="toolbar-actions">
+            <span class="count-badge" id="pjp-count">0 rows</span>
+            <input id="pjp-search" class="search-input" type="search" placeholder="Search PJP rows" />
+          </div>
+        </div>
         <table>
           <thead><tr><th>Date</th><th>Route</th><th>Total</th><th>A</th><th>B</th><th>C</th><th>D</th><th>S</th></tr></thead>
           <tbody id="pjp-body"></tbody>
         </table>
+        <div id="pjp-empty" class="table-empty" style="display:none;">No PJP rows match this filter.</div>
       </section>
     </main>
   </div>
@@ -356,6 +455,48 @@
       });
       if (!res.ok) throw new Error(await res.text());
       return res.json();
+    }
+
+    const prodSearch = document.getElementById('prod-search');
+    const townSearch = document.getElementById('town-search');
+    const routeSearch = document.getElementById('route-search');
+    const pjpSearch = document.getElementById('pjp-search');
+    const prodCount = document.getElementById('prod-count');
+    const townCount = document.getElementById('town-count');
+    const routeCount = document.getElementById('route-count');
+    const pjpCount = document.getElementById('pjp-count');
+    const prodEmpty = document.getElementById('prod-empty');
+    const townEmpty = document.getElementById('town-empty');
+    const routeEmpty = document.getElementById('route-empty');
+    const pjpEmpty = document.getElementById('pjp-empty');
+
+    function filterTable(bodyEl, query, countEl, emptyEl) {
+      const q = (query || '').toLowerCase().trim();
+      let visible = 0;
+      bodyEl.querySelectorAll('tr').forEach((tr) => {
+        const haystack = (tr.textContent || '').toLowerCase();
+        const match = !q || haystack.includes(q);
+        tr.style.display = match ? '' : 'none';
+        if (match) visible += 1;
+      });
+      if (countEl) countEl.textContent = `${visible} rows`;
+      if (emptyEl) emptyEl.style.display = visible ? 'none' : 'block';
+    }
+
+    function applyProductFilter() {
+      filterTable(document.getElementById('prod-body'), prodSearch.value, prodCount, prodEmpty);
+    }
+
+    function applyTownFilter() {
+      filterTable(document.getElementById('town-body'), townSearch.value, townCount, townEmpty);
+    }
+
+    function applyRouteFilter() {
+      filterTable(document.getElementById('route-body'), routeSearch.value, routeCount, routeEmpty);
+    }
+
+    function applyPjpFilter() {
+      filterTable(document.getElementById('pjp-body'), pjpSearch.value, pjpCount, pjpEmpty);
     }
 
     async function loadRegions() {
@@ -396,6 +537,7 @@
         tr.innerHTML = `<td>${row.product_id}</td><td>${row.product_name || ''}</td><td>${row.ml || ''}</td><td>${row.packing || ''}</td><td>${row.sales_price || ''}</td>`;
         body.appendChild(tr);
       });
+      applyProductFilter();
     }
 
     async function loadTownships() {
@@ -410,6 +552,7 @@
         tr.innerHTML = `<td>${row.township_id}</td><td>${row.township_name || ''}</td><td>${row.region_id || ''}</td>`;
         body.appendChild(tr);
       });
+      applyTownFilter();
     }
 
     async function loadRoutes() {
@@ -424,6 +567,7 @@
         tr.innerHTML = `<td>${row.route_id}</td><td>${row.route_name || ''}</td><td>${row.region_id || ''}</td><td>${row.van_id || ''}</td>`;
         body.appendChild(tr);
       });
+      applyRouteFilter();
     }
 
     async function loadPjp() {
@@ -437,6 +581,7 @@
         tr.innerHTML = `<td>${row.date}</td><td>${row.route_id}</td><td>${row.total_planned || ''}</td><td>${row.planned_a || ''}</td><td>${row.planned_b || ''}</td><td>${row.planned_c || ''}</td><td>${row.planned_d || ''}</td><td>${row.planned_s || ''}</td>`;
         body.appendChild(tr);
       });
+      applyPjpFilter();
     }
 
     async function saveProduct() {
@@ -564,6 +709,10 @@
     document.getElementById('route-hist-load').addEventListener('click', loadRouteHistory);
     document.getElementById('pjp-save').addEventListener('click', savePjp);
     document.getElementById('pjp-load').addEventListener('click', loadPjp);
+    prodSearch.addEventListener('input', applyProductFilter);
+    townSearch.addEventListener('input', applyTownFilter);
+    routeSearch.addEventListener('input', applyRouteFilter);
+    pjpSearch.addEventListener('input', applyPjpFilter);
 
     document.getElementById('md-refresh').addEventListener('click', () => {
       loadProducts();

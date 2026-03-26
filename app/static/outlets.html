@@ -272,13 +272,41 @@
     </aside>
 
     <section class="panel list-panel">
-      <div class="search">
-        <label for="search" style="font-size:12px;color:var(--muted);">Search outlets</label>
-        <input id="search" type="text" placeholder="Name, phone, township" />
+      <div class="toolbar">
+        <div class="toolbar-title">
+          <h3 style="margin:0;">Outlet Browser</h3>
+          <div class="meta">Search, filter, and open any outlet fast.</div>
+        </div>
+        <div class="toolbar-actions">
+          <span class="count-badge" id="outlet-count">0 shown</span>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <label class="field">
+          Search
+          <input id="search" class="search-input" type="search" placeholder="Name, phone, township" />
+        </label>
+        <label class="field">
+          Type
+          <select id="type-filter" class="search-input">
+            <option value="">All</option>
+            <option value="WS">WS</option>
+            <option value="SWS">SWS</option>
+            <option value="Van">Van</option>
+          </select>
+        </label>
       </div>
       <div class="list" id="outlet-list"></div>
-      <div>
-        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Potential Duplicates</div>
+      <div class="list-empty" id="outlet-empty" style="display:none;">No outlets match this filter.</div>
+      <div style="margin-top:12px;">
+        <div class="toolbar">
+          <div class="toolbar-title">
+            <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">Potential Duplicates</div>
+          </div>
+          <div class="toolbar-actions">
+            <span class="count-badge" id="dedupe-count">0 groups</span>
+          </div>
+        </div>
         <div class="dedupe-list" id="dedupe-list"></div>
       </div>
     </section>
@@ -287,6 +315,61 @@
       <section class="panel header">
         <h2 class="title">Outlet Master</h2>
         <div class="meta">Manage outlets, update type/route with effective dates.</div>
+      </section>
+
+      <section class="panel guide">
+        <div class="guide-header">
+          <div class="guide-title">
+            <h3 style="margin:0;">Outlet Workflow</h3>
+            <div class="meta">Search, edit, and de‑dupe without losing history.</div>
+          </div>
+          <div class="guide-actions">
+            <span class="pill">History aware</span>
+            <span class="pill">Dedupe ready</span>
+          </div>
+        </div>
+        <div class="guide-steps">
+          <div class="guide-step">
+            <div class="step-badge">1</div>
+            <div>
+              <strong>Search & select</strong>
+              <div class="meta">Use the left list to find the outlet quickly.</div>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-badge">2</div>
+            <div>
+              <strong>Edit details</strong>
+              <div class="meta">Update type, phone, address, and effective date.</div>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-badge">3</div>
+            <div>
+              <strong>Merge duplicates</strong>
+              <div class="meta">Review suggested duplicates and merge carefully.</div>
+            </div>
+          </div>
+        </div>
+        <details class="details-panel">
+          <summary>Advanced tips</summary>
+          <div class="info-grid" style="margin-top:12px;">
+            <div class="info-card">
+              <strong>Clean data</strong>
+              <ul class="info-list">
+                <li>Keep names consistent across languages.</li>
+                <li>Always set an effective date for changes.</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <strong>Routes</strong>
+              <ul class="info-list">
+                <li>Align outlet type with route (WS/SWS/Van).</li>
+                <li>Use history to track route changes over time.</li>
+              </ul>
+            </div>
+          </div>
+        </details>
       </section>
 
       <section class="panel detail">
@@ -336,6 +419,10 @@
   <script>
     const listEl = document.getElementById('outlet-list');
     const searchEl = document.getElementById('search');
+    const typeFilter = document.getElementById('type-filter');
+    const outletCount = document.getElementById('outlet-count');
+    const outletEmpty = document.getElementById('outlet-empty');
+    const dedupeCount = document.getElementById('dedupe-count');
     const nameMm = document.getElementById('name-mm');
     const nameEn = document.getElementById('name-en');
     const typeEl = document.getElementById('type');
@@ -356,8 +443,10 @@
     function renderList() {
       listEl.innerHTML = '';
       const query = searchEl.value.toLowerCase();
+      const type = typeFilter.value;
       const filtered = outlets.filter((o) => {
         const text = `${o.outlet_name_mm || ''} ${o.outlet_name_en || ''} ${o.contact_phone || ''}`.toLowerCase();
+        if (type && o.outlet_type !== type) return false;
         return !query || text.includes(query);
       });
 
@@ -377,6 +466,8 @@
         });
         listEl.appendChild(item);
       });
+      outletCount.textContent = `${filtered.length} shown / ${outlets.length}`;
+      outletEmpty.style.display = filtered.length ? 'none' : 'block';
     }
 
     function fillDetail() {
@@ -427,9 +518,11 @@
       const data = await res.json();
       const groups = data.groups || [];
       if (!groups.length) {
-        dedupeList.innerHTML = '<div style="font-size:12px;color:var(--muted);">No duplicates detected.</div>';
+        dedupeList.innerHTML = '<div class="list-empty">No duplicates detected.</div>';
+        dedupeCount.textContent = '0 groups';
         return;
       }
+      dedupeCount.textContent = `${groups.length} groups`;
       groups.forEach((g) => {
         const items = g.outlets || [];
         if (items.length < 2) return;
@@ -483,6 +576,7 @@
 
     document.getElementById('refresh').addEventListener('click', loadOutlets);
     searchEl.addEventListener('input', renderList);
+    typeFilter.addEventListener('change', renderList);
 
     loadOutlets();
     loadDedupe();

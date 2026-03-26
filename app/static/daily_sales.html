@@ -393,6 +393,61 @@
         </div>
       </section>
 
+      <section class="panel guide">
+        <div class="guide-header">
+          <div class="guide-title">
+            <h3 style="margin:0;">Daily Entry Flow</h3>
+            <div class="meta">Beginner‑friendly steps with power shortcuts built in.</div>
+          </div>
+          <div class="guide-actions">
+            <span class="pill">Auto‑convert liters</span>
+            <span class="pill">Draft safe</span>
+          </div>
+        </div>
+        <div class="guide-steps">
+          <div class="guide-step">
+            <div class="step-badge">1</div>
+            <div>
+              <strong>Set context</strong>
+              <div class="meta">Pick date, region, route, and voucher before entry.</div>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-badge">2</div>
+            <div>
+              <strong>Quick entry</strong>
+              <div class="meta">Choose outlet + product, then enter pack/bottle.</div>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-badge">3</div>
+            <div>
+              <strong>Review & submit</strong>
+              <div class="meta">Check totals, save draft, or submit day.</div>
+            </div>
+          </div>
+        </div>
+        <details class="details-panel">
+          <summary>Advanced tips & shortcuts</summary>
+          <div class="info-grid" style="margin-top:12px;">
+            <div class="info-card">
+              <strong>Speed</strong>
+              <ul class="info-list">
+                <li>Use “Scan Invoice” to prefill entries fast.</li>
+                <li>Auto‑convert packs/bottles into liters.</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <strong>Accuracy</strong>
+              <ul class="info-list">
+                <li>Draft saves prevent duplicate transactions.</li>
+                <li>Check summary cards before submit.</li>
+              </ul>
+            </div>
+          </div>
+        </details>
+      </section>
+
       <section class="quick-entry panel">
         <div class="topbar-row" style="grid-template-columns: 1fr auto;">
           <div>
@@ -462,6 +517,22 @@
             <p id="sum-liter">0.00</p>
           </div>
         </div>
+        <div class="toolbar" style="padding: 0 14px 10px;">
+          <div class="toolbar-title">
+            <strong>Transactions</strong>
+            <div class="meta">Filter the current day entries.</div>
+          </div>
+          <div class="toolbar-actions">
+            <span class="count-badge" id="txn-count">0 rows</span>
+            <input id="txn-search" class="search-input" type="search" placeholder="Search outlet, product, voucher" />
+            <select id="txn-channel-filter" class="search-input">
+              <option value="">All Channels</option>
+              <option value="WS">WS</option>
+              <option value="SWS">SWS</option>
+              <option value="Van">Van</option>
+            </select>
+          </div>
+        </div>
         <div class="table-wrap">
           <table>
             <thead>
@@ -481,6 +552,7 @@
             <tbody id="txn-body"></tbody>
           </table>
         </div>
+        <div id="txn-empty" class="table-empty" style="display:none;">No transactions match this filter.</div>
         <div class="footer-actions">
           <button class="btn ghost" id="save-draft">Save Draft</button>
           <button class="btn primary" id="submit-day">Submit Day</button>
@@ -534,6 +606,10 @@
     const sumBottle = document.getElementById("sum-bottle");
     const sumLiter = document.getElementById("sum-liter");
     const dayCount = document.getElementById("day-count");
+    const txnSearch = document.getElementById("txn-search");
+    const txnChannelFilter = document.getElementById("txn-channel-filter");
+    const txnCount = document.getElementById("txn-count");
+    const txnEmpty = document.getElementById("txn-empty");
 
     const qeOutlet = document.getElementById("qe-outlet");
     const qeProduct = document.getElementById("qe-product");
@@ -660,9 +736,11 @@
       tr.querySelector("[data-remove]").addEventListener("click", () => {
         tr.remove();
         updateTotals();
+        applyTxnFilter();
       });
 
       updateTotals();
+      applyTxnFilter();
     }
 
     function updateTotals() {
@@ -679,6 +757,28 @@
       sumBottle.textContent = totalBottle.toFixed(0);
       sumLiter.textContent = totalLiter.toFixed(2);
       dayCount.textContent = txnBody.querySelectorAll("tr").length;
+    }
+
+    function applyTxnFilter() {
+      const query = (txnSearch.value || "").toLowerCase().trim();
+      const channel = txnChannelFilter.value;
+      let visible = 0;
+      txnBody.querySelectorAll("tr").forEach((tr) => {
+        const cells = tr.querySelectorAll("td");
+        const outlet = cells[0]?.textContent || "";
+        const product = cells[1]?.textContent || "";
+        const channelText = cells[5]?.textContent || "";
+        const inputs = tr.querySelectorAll("input");
+        const voucher = inputs[3]?.value || "";
+        const car = inputs[4]?.value || "";
+        const notes = inputs[5]?.value || "";
+        const haystack = `${outlet} ${product} ${channelText} ${voucher} ${car} ${notes}`.toLowerCase();
+        const matches = (!channel || channelText === channel) && (!query || haystack.includes(query));
+        tr.style.display = matches ? "" : "none";
+        if (matches) visible += 1;
+      });
+      txnCount.textContent = `${visible} rows`;
+      txnEmpty.style.display = visible ? "none" : "block";
     }
 
     async function loadMetadata() {
@@ -713,6 +813,7 @@
           notes: ""
         });
       });
+      applyTxnFilter();
     }
 
     document.getElementById("qe-add").addEventListener("click", async () => {
@@ -769,6 +870,8 @@
     qePack.addEventListener("input", updateQuickConversion);
     qeBottle.addEventListener("input", updateQuickConversion);
     qeOutlet.addEventListener("change", updateOutletCard);
+    txnSearch.addEventListener("input", applyTxnFilter);
+    txnChannelFilter.addEventListener("change", applyTxnFilter);
 
     dateInput.value = today();
     document.getElementById("meta-date").textContent = dateInput.value;

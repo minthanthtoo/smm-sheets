@@ -320,12 +320,43 @@
         </div>
       </section>
 
-      <section class="panel" style="padding: 16px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-          <h3 style="margin:0;">Import Guide</h3>
-          <span class="pill">Accepted: .xlsx · .xlsm</span>
+      <section class="panel guide">
+        <div class="guide-header">
+          <div class="guide-title">
+            <h3 style="margin:0;">Import Guide</h3>
+            <div class="meta">Simple steps, smart detection, and auto-ready regeneration.</div>
+          </div>
+          <div class="guide-actions">
+            <span class="pill">Accepted: .xlsx · .xlsm</span>
+            <span class="pill">Region Auto-Detect</span>
+          </div>
         </div>
-        <div class="info-grid" style="margin-top:12px;">
+
+        <div class="guide-steps">
+          <div class="guide-step">
+            <div class="step-badge">1</div>
+            <div>
+              <strong>Prepare files</strong>
+              <div class="meta">Export Excel with values only. Keep headers on the first visible row.</div>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-badge">2</div>
+            <div>
+              <strong>Upload & run</strong>
+              <div class="meta">Select region (optional) and batch upload multiple files at once.</div>
+            </div>
+          </div>
+          <div class="guide-step">
+            <div class="step-badge">3</div>
+            <div>
+              <strong>Regen reports</strong>
+              <div class="meta">Exports and report templates are regenerated from the single source of truth.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-grid">
           <div class="info-card">
             <strong>File Types</strong>
             <ul class="info-list">
@@ -354,6 +385,14 @@
               <li>MTL: `mtl`, `meiktila`, or `mhl` in filename</li>
               <li>YGN: `ygn` or `yangon` in filename</li>
               <li>Otherwise: `UNK`</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <strong>Filename Patterns (Import & Regen)</strong>
+            <ul class="info-list">
+              <li>Import data: `*Table*DailySales*`, `*DailySales*`, `*PGSales*` / `*PG Daily Sales*`, `*Outlet List*`, `*Way Plan*`, `*PJP*Outlet*`</li>
+              <li>Regen templates: `*Individual*Sales*`, `*SKU*Summary*` / `*SKU*Analysis*`, `*Township*Summary*`, `*Van Wise*`, `*Sales Compare*`</li>
+              <li>Headers still drive parsing; filenames only help detection.</li>
             </ul>
           </div>
         </div>
@@ -385,14 +424,31 @@
           </div>
         </details>
 
-        <div style="margin-top:10px; color: var(--muted); font-size: 12px;">
+        <div class="guide-footnote">
           Tip: Save spreadsheets with values (data-only). If a header row can't be detected, that sheet is skipped.
         </div>
       </section>
 
       <section class="panel" style="padding: 16px;">
-        <h3 style="margin:0 0 12px;">Recent Imports</h3>
-        <table>
+        <div class="toolbar">
+          <div class="toolbar-title">
+            <h3 style="margin:0;">Recent Imports</h3>
+            <div class="meta">Browse runs, filter by status, or search by file name.</div>
+          </div>
+          <div class="toolbar-actions" style="min-width: 260px; flex:1; justify-content:flex-end;">
+            <span class="count-badge" id="imports-count">0 rows</span>
+            <input id="imports-search" class="search-input" type="search" placeholder="Search region, file, status" />
+            <select id="imports-status" class="search-input">
+              <option value="">All Status</option>
+              <option value="success">Success</option>
+              <option value="failed">Failed</option>
+              <option value="running">Running</option>
+              <option value="queued">Queued</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+        </div>
+        <table style="margin-top:12px;">
           <thead>
             <tr>
               <th>ID</th>
@@ -406,6 +462,7 @@
           </thead>
           <tbody id="imports-body"></tbody>
         </table>
+        <div id="imports-empty" class="table-empty" style="display:none;">No imports match this filter.</div>
       </section>
     </main>
   </div>
@@ -416,6 +473,12 @@
     const refreshBtn = document.getElementById('refresh-btn');
     const regionSelect = document.getElementById('region-select');
     const fileInput = document.getElementById('file-input');
+    const importsSearch = document.getElementById('imports-search');
+    const importsStatus = document.getElementById('imports-status');
+    const importsCount = document.getElementById('imports-count');
+    const importsEmpty = document.getElementById('imports-empty');
+
+    let importsRows = [];
 
     async function loadRegions() {
       try {
@@ -438,11 +501,22 @@
       return val.replace('T', ' ').slice(0, 19);
     }
 
-    async function loadImports() {
-      const res = await fetch('/api/imports?limit=25');
-      const data = await res.json();
+    function renderImports() {
+      const query = (importsSearch.value || '').toLowerCase().trim();
+      const statusFilter = importsStatus.value;
+      const rows = (importsRows || []).filter((row) => {
+        if (statusFilter && row.status !== statusFilter) return false;
+        if (!query) return true;
+        const haystack = [
+          row.region || '',
+          row.status || '',
+          (row.file_names || []).join(' '),
+          row.error_message || ''
+        ].join(' ').toLowerCase();
+        return haystack.includes(query);
+      });
       importsBody.innerHTML = '';
-      (data.rows || []).forEach((row) => {
+      rows.forEach((row) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${row.import_id}</td>
@@ -455,6 +529,15 @@
         `;
         importsBody.appendChild(tr);
       });
+      importsCount.textContent = `${rows.length} rows`;
+      importsEmpty.style.display = rows.length ? 'none' : 'block';
+    }
+
+    async function loadImports() {
+      const res = await fetch('/api/imports?limit=25');
+      const data = await res.json();
+      importsRows = data.rows || [];
+      renderImports();
     }
 
     async function runImport() {
@@ -486,6 +569,8 @@
       }
     }
 
+    importsSearch.addEventListener('input', renderImports);
+    importsStatus.addEventListener('change', renderImports);
     refreshBtn.addEventListener('click', loadImports);
     importBtn.addEventListener('click', runImport);
 
