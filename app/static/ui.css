@@ -400,6 +400,22 @@ textarea {
   transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
+input[type="file"] {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: #f9fafb;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 input:focus,
 select:focus,
 textarea:focus {
@@ -532,28 +548,52 @@ tbody tr:nth-child(even) {
 .check-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
+  gap: 14px;
 }
 
 .check-card {
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: 20px;
   background: #ffffff;
-  padding: 12px;
-  padding-right: 46px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: stretch;
+  box-shadow: var(--shadow-soft);
+  min-height: 170px;
+}
+
+.check-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.check-card-title {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.check-card-body {
   display: grid;
-  gap: 6px;
-  align-items: start;
-  position: relative;
-  box-shadow: var(--glow);
+  gap: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.check-card-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
 }
 
 .check-input {
-  position: absolute;
-  top: 12px;
-  right: 12px;
+  position: static;
   width: 18px;
   height: 18px;
+  accent-color: #0f1115;
 }
 
 .tag {
@@ -589,6 +629,39 @@ tbody tr:nth-child(even) {
 
 .catalog-card details + details {
   margin-top: 10px;
+}
+
+.catalog-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 260px;
+}
+
+.catalog-card .details-panel {
+  background: #fbfbfd;
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+}
+
+.catalog-card .info-list li {
+  padding-left: 0;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.catalog-card .info-list li::before {
+  display: none;
+}
+
+.catalog-card .mono {
+  word-break: break-word;
+}
+
+.catalog-card summary {
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .catalog-group {
@@ -846,6 +919,7 @@ tbody tr:nth-child(even) {
   gap: 10px;
   justify-content: flex-end;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .mobile-bar {
@@ -882,6 +956,10 @@ tbody tr:nth-child(even) {
   .controls,
   .filter-bar {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .check-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   }
 }
 
@@ -936,6 +1014,10 @@ tbody tr:nth-child(even) {
   .stack-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .check-card {
+    min-height: auto;
   }
 
   table {
