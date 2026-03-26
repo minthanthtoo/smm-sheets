@@ -6,7 +6,7 @@
   <title>SMM Import Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Noto+Serif+Myanmar:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Noto+Serif+Myanmar:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     :root {
       --bg-0: #fff6ec;
@@ -490,20 +490,22 @@
             </select>
           </div>
         </div>
-        <table style="margin-top:12px;">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Region</th>
-              <th>Status</th>
-              <th>Requested</th>
-              <th>Completed</th>
-              <th>Files</th>
-              <th>Error</th>
-            </tr>
-          </thead>
-          <tbody id="imports-body"></tbody>
-        </table>
+        <div class="table-wrap" style="margin-top:12px;">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Region</th>
+                <th>Status</th>
+                <th>Requested</th>
+                <th>Completed</th>
+                <th>Files</th>
+                <th>Error</th>
+              </tr>
+            </thead>
+            <tbody id="imports-body"></tbody>
+          </table>
+        </div>
         <div id="imports-empty" class="table-empty" style="display:none;">No imports match this filter.</div>
       </section>
     </main>
