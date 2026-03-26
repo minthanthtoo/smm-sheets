@@ -634,6 +634,29 @@
         <div class="guide-footnote">Exports package selected files per region and include a regeneration manifest.</div>
       </section>
 
+      <section class="panel section">
+        <div class="toolbar">
+          <div class="toolbar-title">
+            <strong>Output Library (View by Report Type)</strong>
+            <div class="meta">Browse each export category as a dedicated view for faster review.</div>
+          </div>
+        </div>
+        <div class="controls" style="margin-top:12px;">
+          <label class="field">
+            Region Filter
+            <select id="output-region">
+              <option value="">All Regions</option>
+            </select>
+          </label>
+          <label class="field">
+            Search Files
+            <input id="output-search" type="search" placeholder="Search filename or region" />
+          </label>
+        </div>
+        <div id="output-tabbar" class="tab-bar" style="margin-top:12px;"></div>
+        <div id="output-panel" class="output-panel" style="margin-top:12px;"></div>
+      </section>
+
       <section class="panel" style="padding: 16px;">
         <div class="toolbar">
           <div class="toolbar-title">
@@ -693,8 +716,13 @@
     const exportClear = document.getElementById('export-clear');
     const exportOptions = Array.from(document.querySelectorAll('.export-option'));
     const catalogGrid = document.getElementById('catalog-grid');
+    const outputRegion = document.getElementById('output-region');
+    const outputSearch = document.getElementById('output-search');
+    const outputTabbar = document.getElementById('output-tabbar');
+    const outputPanel = document.getElementById('output-panel');
 
     let importsRows = [];
+    let catalogData = null;
     const categoryLabels = {
       individual_sales: 'Individual Sales',
       sku_summary: 'SKU Summary',
@@ -728,6 +756,7 @@
         const data = await res.json();
         regionSelect.innerHTML = '<option value="">All Regions</option>';
         if (exportRegion) exportRegion.innerHTML = '<option value="">All Regions</option>';
+        if (outputRegion) outputRegion.innerHTML = '<option value="">All Regions</option>';
         (data.regions || []).forEach((r) => {
           const opt = document.createElement('option');
           opt.value = r;
@@ -738,6 +767,12 @@
             expOpt.value = r;
             expOpt.textContent = r;
             exportRegion.appendChild(expOpt);
+          }
+          if (outputRegion) {
+            const outOpt = document.createElement('option');
+            outOpt.value = r;
+            outOpt.textContent = r;
+            outputRegion.appendChild(outOpt);
           }
         });
       } catch (err) {
@@ -827,11 +862,71 @@
       try {
         const res = await fetch('/api/imports/catalog');
         const data = await res.json();
+        catalogData = data;
         renderCatalog(data);
+        renderOutputLibrary();
       } catch (err) {
         console.error(err);
         catalogGrid.innerHTML = '<div class="info-card"><strong>Catalog unavailable.</strong><div class="meta">Unable to load source file catalog.</div></div>';
       }
+    }
+
+    function renderOutputLibrary(selectedTab) {
+      if (!outputTabbar || !outputPanel) return;
+      const data = catalogData;
+      if (!data || !data.regions) {
+        outputTabbar.innerHTML = '';
+        outputPanel.innerHTML = '<div class="info-card"><strong>No catalog data.</strong><div class="meta">Upload core files to see outputs.</div></div>';
+        return;
+      }
+      const activeTab = selectedTab || outputTabbar.querySelector('.tab.active')?.dataset?.tab || categoryOrder[0];
+      outputTabbar.innerHTML = categoryOrder
+        .map((key) => `<button class="tab ${key === activeTab ? 'active' : ''}" data-tab="${key}" type="button">${categoryLabels[key] || key}</button>`)
+        .join('');
+
+      const regionFilter = outputRegion && outputRegion.value ? outputRegion.value : '';
+      const query = (outputSearch && outputSearch.value ? outputSearch.value : '').toLowerCase().trim();
+      const blocks = [];
+      data.regions.forEach((region) => {
+        if (regionFilter && region.region !== regionFilter) return;
+        const files = (region.exports || []).filter((item) => item.category === activeTab);
+        if (!files.length) return;
+        const filtered = files.filter((item) => {
+          if (!query) return true;
+          const hay = `${region.region} ${item.file}`.toLowerCase();
+          return hay.includes(query);
+        });
+        if (!filtered.length) return;
+        blocks.push(`
+          <div class="output-card">
+            <div class="output-card-header">
+              <strong>${region.region}</strong>
+              <span class="count-badge">${filtered.length} files</span>
+            </div>
+            <div class="output-list">
+              ${filtered
+                .map((item) => {
+                  const tag = regenCategories.has(item.category) ? 'regen' : 'template';
+                  return `
+                    <div class="output-item">
+                      <span class="tag ${tag}">${tag === 'regen' ? 'Regen' : 'Template'}</span>
+                      <span class="mono">${item.file}</span>
+                    </div>
+                  `;
+                })
+                .join('')}
+            </div>
+          </div>
+        `);
+      });
+
+      outputPanel.innerHTML = blocks.length
+        ? `<div class="output-grid">${blocks.join('')}</div>`
+        : '<div class="info-card"><strong>No files found.</strong><div class="meta">Try another category or region.</div></div>';
+
+      outputTabbar.querySelectorAll('.tab').forEach((btn) => {
+        btn.addEventListener('click', () => renderOutputLibrary(btn.dataset.tab));
+      });
     }
 
     function formatDate(val) {
@@ -973,6 +1068,13 @@
     }
     if (exportRun) {
       exportRun.addEventListener('click', runExport);
+    }
+
+    if (outputSearch) {
+      outputSearch.addEventListener('input', () => renderOutputLibrary());
+    }
+    if (outputRegion) {
+      outputRegion.addEventListener('change', () => renderOutputLibrary());
     }
 
     if (guideDialog && openGuide) {
