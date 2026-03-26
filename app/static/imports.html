@@ -335,36 +335,55 @@
           </div>
         </div>
 
-        <div class="guide-steps">
-          <div class="guide-step">
-            <div class="step-badge">1</div>
-            <div>
-              <strong>Prepare files</strong>
-              <div class="meta">Export Excel with values only. Keep headers on the first visible row.</div>
+          <div class="guide-steps">
+            <div class="guide-step">
+              <div class="step-badge">1</div>
+              <div>
+                <strong>Prepare files</strong>
+                <div class="meta">Export Excel with values only. Keep headers on the first visible row.</div>
+              </div>
+            </div>
+            <div class="guide-step">
+              <div class="step-badge">2</div>
+              <div>
+                <strong>Upload & run</strong>
+                <div class="meta">Select region (optional) and batch upload multiple files at once.</div>
+              </div>
+            </div>
+            <div class="guide-step">
+              <div class="step-badge">3</div>
+              <div>
+                <strong>Regen reports</strong>
+                <div class="meta">Exports and report templates are regenerated from the single source of truth.</div>
+              </div>
             </div>
           </div>
-          <div class="guide-step">
-            <div class="step-badge">2</div>
-            <div>
-              <strong>Upload & run</strong>
-              <div class="meta">Select region (optional) and batch upload multiple files at once.</div>
-            </div>
-          </div>
-          <div class="guide-step">
-            <div class="step-badge">3</div>
-            <div>
-              <strong>Regen reports</strong>
-              <div class="meta">Exports and report templates are regenerated from the single source of truth.</div>
-            </div>
-          </div>
-        </div>
 
-        <div class="guide-grid">
-          <div class="info-card">
-            <strong>File Types</strong>
-            <ul class="info-list">
-              <li>Only `.xlsx` and `.xlsm` files are processed.</li>
-              <li>Multiple files can be uploaded in one run.</li>
+          <div class="guide-grid">
+            <div class="info-card">
+              <strong>What Happens Next</strong>
+              <ul class="info-list">
+                <li>Daily sales rows are normalized into the database.</li>
+                <li>Master data is updated (products, outlets, routes).</li>
+                <li>Reports and Excel templates can be regenerated anytime.</li>
+              </ul>
+            </div>
+            <div class="info-card">
+              <strong>Best Practice</strong>
+              <ul class="info-list">
+                <li>Run Data Quality after each import batch.</li>
+                <li>Fix missing outlet/product before reporting.</li>
+                <li>Use Master Data to correct upstream definitions.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="guide-grid">
+            <div class="info-card">
+              <strong>File Types</strong>
+              <ul class="info-list">
+                <li>Only `.xlsx` and `.xlsm` files are processed.</li>
+                <li>Multiple files can be uploaded in one run.</li>
               <li>`.xls` and `.csv` are not supported.</li>
             </ul>
           </div>
@@ -400,9 +419,28 @@
           </div>
         </div>
 
-        <details class="import-details" style="margin-top:12px;">
-          <summary>Header requirements (what the parser looks for)</summary>
-          <div class="header-grid">
+          <div class="guide-links">
+            <a class="guide-link" href="/quality">
+              <strong>Data Quality</strong>
+              <div class="meta">Find missing outlet/product/route data after import.</div>
+            </a>
+            <a class="guide-link" href="/master-data">
+              <strong>Master Data</strong>
+              <div class="meta">Adjust products, townships, routes, and PJP.</div>
+            </a>
+            <a class="guide-link" href="/reports">
+              <strong>Reports</strong>
+              <div class="meta">Regenerate templates and export summaries.</div>
+            </a>
+            <a class="guide-link" href="/outlets">
+              <strong>Outlet Master</strong>
+              <div class="meta">Fix outlet details and de‑dupe records.</div>
+            </a>
+          </div>
+
+          <details class="import-details" style="margin-top:12px;">
+            <summary>Header requirements (what the parser looks for)</summary>
+            <div class="header-grid">
             <div class="header-card">
               <strong>Table sheet</strong>
               <div style="margin-top:6px;">Product headers: `stock id`, `particular`, `ml`, `qty`, `column1`, `sales price`</div>

@@ -532,6 +532,34 @@ tbody tr:nth-child(even) {
   gap: 12px;
 }
 
+.guide-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.guide-link {
+  background: var(--surface-2);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-decoration: none;
+  color: inherit;
+  display: grid;
+  gap: 6px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.guide-link:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-soft);
+}
+
+.guide-link .meta {
+  font-size: 12px;
+}
+
 .import-details,
 .details-panel {
   border: 1px solid rgba(15, 23, 42, 0.08);
