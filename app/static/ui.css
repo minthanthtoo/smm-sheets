@@ -49,6 +49,11 @@ body::before {
   gap: 22px;
 }
 
+.main {
+  display: grid;
+  gap: 18px;
+}
+
 @keyframes float-in {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -125,6 +130,83 @@ h1, h2, h3, h4 {
   letter-spacing: 0.02em;
 }
 
+.section {
+  display: grid;
+  gap: 12px;
+}
+
+.header,
+.topbar-row,
+.action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.info-grid,
+.header-grid,
+.detail-grid,
+.quick-grid,
+.grid-2,
+.kpis {
+  display: grid;
+  gap: 14px;
+}
+
+.info-grid,
+.header-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.detail-grid,
+.grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.quick-grid {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.kpis {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.summary,
+.summary-card,
+.card {
+  padding: 16px;
+}
+
+.info-card,
+.header-card,
+.summary-card {
+  padding: 14px 16px;
+}
+
+.label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.mono {
+  font-family: "Space Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.myanmar {
+  font-family: "Noto Serif Myanmar", "Noto Sans Myanmar", serif;
+}
+
+.kpi .big-num,
+.summary-card .big-num {
+  font-size: 26px;
+  font-weight: 700;
+}
+
 .info-card,
 .stat,
 .card {
@@ -191,6 +273,20 @@ table {
   width: 100%;
 }
 
+table th,
+table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  font-size: 13px;
+}
+
+table th {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
 thead th {
   position: sticky;
   top: 0;
@@ -208,6 +304,23 @@ tbody tr:hover {
 .status.done {
   color: #0b6e4f;
   background: rgba(11, 110, 79, 0.1);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-weight: 600;
+}
+
+.status.running {
+  color: #1d4ed8;
+  background: rgba(29, 78, 216, 0.12);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-weight: 600;
+}
+
+.status.pending,
+.status.queued {
+  color: #9a3412;
+  background: rgba(249, 115, 22, 0.12);
   border-radius: 999px;
   padding: 4px 8px;
   font-weight: 600;
@@ -249,6 +362,15 @@ tbody tr:hover {
 
   .title {
     font-size: 22px;
+  }
+  .action-row,
+  .topbar-row {
+    align-items: flex-start;
+  }
+
+  table th,
+  table td {
+    padding: 8px 10px;
   }
 }
 
