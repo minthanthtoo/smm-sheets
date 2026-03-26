@@ -237,18 +237,26 @@ def process_files(paths: List[Path]):
         for ws in wb.worksheets:
             title_norm = norm_key(ws.title)
             title_key = re.sub(r"[^a-z0-9]+", "", title_norm)
+            handled = False
             if title_key.startswith("table"):
                 parse_table_sheet(path, ws, region_id, products, outlets, townships, routes, [])
+                handled = True
             elif is_daily_sales_title(title_norm, title_key):
                 parse_daily_sales_sheet(path, ws, region_id, products, outlets, townships, sales_rows, financial_rows)
+                handled = True
             elif "outletlist" in title_key:
                 parse_outlet_list_sheet(path, ws, region_id, outlets, townships, routes)
+                handled = True
             elif "wayplan" in title_key or "wayplay" in title_key or "wayplan" in title_norm or "wayplay" in title_norm:
                 from etl_load_sources import parse_way_plan_sheet
                 parse_way_plan_sheet(path, ws, region_id, routes, pjp_rows)
+                handled = True
             elif "pjpoutlets" in title_key or ("pjp" in title_key and "outlet" in title_key):
                 from etl_load_sources import parse_pjp_outlets_sheet
                 parse_pjp_outlets_sheet(path, ws, region_id, outlets, routes, route_outlet_rows)
+                handled = True
+            if not handled:
+                parse_daily_sales_sheet(path, ws, region_id, products, outlets, townships, sales_rows, financial_rows)
         wb.close()
 
     # enrich with txn_key/hash

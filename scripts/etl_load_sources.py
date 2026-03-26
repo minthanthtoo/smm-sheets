@@ -71,6 +71,7 @@ DAILY_HEADERS = {
     "voucherno": "voucher_no",
     "carno": "car_no",
     "customerid": "customer_id_raw",
+    "customer name": "outlet_name_raw",
     "ကုန်သည်အမည်": "outlet_name_raw",
     "township": "township_name_raw",
     "လိပ်စာ": "address_raw",
@@ -88,11 +89,18 @@ DAILY_HEADERS = {
     "ပါဝင်မှု": "participation_raw",
     "bottle": "qty_bottle",
     "salespk": "qty_pack",
+    "sales pk": "qty_pack",
+    "sales pkt": "qty_pack",
+    "sales ctn": "qty_pack",
     "salesbot": "qty_bottle",
+    "sales bottle": "qty_bottle",
+    "bot": "qty_bottle",
     "sales bot": "qty_bottle",
     "sales ctns": "qty_pack",
     "liter": "qty_liter",
     "sales liter": "qty_liter",
+    "litre": "qty_liter",
+    "lit": "qty_liter",
     "parking": "parking_fee",
     "နှုံး": "unit_rate",
     "bonus": "unit_rate",
@@ -401,6 +409,10 @@ def parse_daily_sales_sheet(path: Path, ws, region_id: str,
     match_count = sum(1 for hv in header_to_col if hv in DAILY_HEADERS)
     if match_count < 5:
         return
+    header_keys = set(DAILY_HEADERS.keys())
+
+    def row_header_match(row_vals: List[str]) -> int:
+        return sum(1 for v in row_vals if v in header_keys)
 
     def get_col(hv: str, default_idx: int):
         col = header_to_col.get(hv)
@@ -409,6 +421,13 @@ def parse_daily_sales_sheet(path: Path, ws, region_id: str,
         return row[default_idx] if len(row) > default_idx else None
 
     for row_idx, row in enumerate(ws.iter_rows(min_row=header_row + 1, values_only=True), start=header_row + 1):
+        row_vals = [norm_key(v) for v in row]
+        if row_header_match(row_vals) >= 5:
+            header_to_col = {}
+            for idx, hv in enumerate(row_vals, start=1):
+                if hv and hv not in header_to_col:
+                    header_to_col[hv] = idx
+            continue
         year = get_col("year", 0)
         month = get_col("month", 1)
         date_val = get_col("date", 2)
@@ -459,6 +478,11 @@ def parse_daily_sales_sheet(path: Path, ws, region_id: str,
         stock_id_raw = norm(row_data.get("product_id_raw"))
         stock_name_raw = norm(row_data.get("stock_name_raw"))
         ml_raw = row_data.get("ml_raw")
+
+        if not (outlet_name or row_data.get("customer_id_raw")):
+            continue
+        if not (stock_id_raw or stock_name_raw):
+            continue
 
         if township:
             tid = make_id("town", norm_key(f"{region_id}|{township}"))
@@ -779,16 +803,25 @@ def main():
         for ws in wb.worksheets:
             title_norm = norm_key(ws.title)
             title_key = re.sub(r"[^a-z0-9]+", "", title_norm)
+            handled = False
             if title_key.startswith("table"):
                 parse_table_sheet(path, ws, region_id, products, outlets, townships, routes, [])
+                handled = True
             elif is_daily_sales_title(title_norm, title_key):
                 parse_daily_sales_sheet(path, ws, region_id, products, outlets, townships, sales_rows, financial_rows)
+                handled = True
             elif "outletlist" in title_key:
                 parse_outlet_list_sheet(path, ws, region_id, outlets, townships, routes)
+                handled = True
             elif "wayplan" in title_key or "wayplay" in title_key or "wayplan" in title_norm or "wayplay" in title_norm:
                 parse_way_plan_sheet(path, ws, region_id, routes, pjp_rows)
+                handled = True
             elif "pjpoutlets" in title_key or ("pjp" in title_key and "outlet" in title_key):
                 parse_pjp_outlets_sheet(path, ws, region_id, outlets, routes, route_outlets)
+                handled = True
+            if not handled:
+                # Fallback: attempt daily sales parsing based on headers (handles non-standard sheet names)
+                parse_daily_sales_sheet(path, ws, region_id, products, outlets, townships, sales_rows, financial_rows)
         wb.close()
 
     write_csv(out_dir / "products.csv", list(products.values()), [
