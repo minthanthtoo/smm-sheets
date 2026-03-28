@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SMM Sheets – Import Hub</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <div class="topbar">
+    <button class="menu-btn" data-menu-toggle>☰</button>
+    <div class="brand">
+      <div class="logo">SMM</div>
+      <div>
+        <div class="title">Sales Ops</div>
+        <div class="subtitle">Import Hub</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">SMM</div>
+        <div>
+          <div class="title">Sales Ops</div>
+          <div class="subtitle">All Regions</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/daily-sales"><span class="icon">📈</span>Daily Sales</a>
+        <a href="/outlets"><span class="icon">🏪</span>Outlets</a>
+        <a href="/master-data"><span class="icon">🗂️</span>Master Data</a>
+        <a class="active" href="/imports"><span class="icon">📥</span>Import Hub</a>
+        <a href="/quality"><span class="icon">✅</span>Data Quality</a>
+        <a href="/reports"><span class="icon">📊</span>Reports</a>
+      </nav>
+      <div class="footer">SMM Sheets · Production Workspace</div>
+    </aside>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Import Hub</h1>
+          <p class="page-sub">Identify core inputs, preview files, and regenerate reports in one place.</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-outline" id="imports-refresh"><span class="icon">⟳</span>Refresh</button>
+          <button class="btn btn-primary" id="run-import"><span class="icon">▶</span>Run Import</button>
+        </div>
+      </div>
+
+      <div class="top-tabs" data-sync-scroll="primary-tabs">
+        <a class="tab" href="/daily-sales"><span class="icon">📈</span>Daily Sales</a>
+        <a class="tab" href="/outlets"><span class="icon">🏪</span>Outlets</a>
+        <a class="tab" href="/master-data"><span class="icon">🗂️</span>Master Data</a>
+        <a class="tab active" href="/imports"><span class="icon">📥</span>Import Hub</a>
+        <a class="tab" href="/quality"><span class="icon">✅</span>Data Quality</a>
+        <a class="tab" href="/reports"><span class="icon">📊</span>Reports</a>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><span class="icon">📥</span>Quick Import</div>
+              <div class="card-sub">Drop core inputs to run migration and preview data before saving.</div>
+            </div>
+          </div>
+          <div class="grid cols-2">
+            <label class="field">
+              Import Region (optional)
+              <select class="select" id="import-region">
+                <option value="">Auto-detect</option>
+              </select>
+            </label>
+            <label class="field">
+              Excel Files
+              <input class="input" type="file" id="import-files" multiple />
+            </label>
+          </div>
+          <div class="divider"></div>
+          <div id="detected-files" class="empty">Select files to see detection and preview options.</div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title"><span class="icon">🛠️</span>Export Builder</div>
+              <div class="card-sub">Choose output files to regenerate from core inputs.</div>
+            </div>
+          </div>
+          <div id="export-selection" class="empty">No outputs selected yet.</div>
+          <div class="divider"></div>
+          <div class="file-actions">
+            <button class="btn btn-outline" id="clear-selection"><span class="icon">✕</span>Clear</button>
+            <button class="btn btn-primary" id="generate-selected"><span class="icon">⚡</span>Generate Selected</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 22px;">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">🗂️</span>Workspace</div>
+            <div class="card-sub">Library, activity, and export status without long scrolling.</div>
+          </div>
+          <input class="input workspace-search" id="workspace-search" placeholder="Search inputs + outputs" />
+        </div>
+        <div class="section-tabs" data-section-tabs data-default-section="library">
+          <button data-section="library"><span class="icon">📚</span>Region Library</button>
+          <button data-section="imports"><span class="icon">📥</span>Import Activity</button>
+          <button data-section="exports"><span class="icon">📤</span>Export Activity</button>
+        </div>
+
+        <div data-section-panel="library">
+          <div class="grid cols-3">
+            <label class="field">
+              Region Filter
+              <input class="input" id="region-filter" placeholder="MTL, YGN" />
+            </label>
+            <label class="field">
+              File Filter
+              <input class="input" id="file-filter" placeholder="Type or file name" />
+            </label>
+            <label class="field">
+              Status Filter
+              <select class="select" id="status-filter">
+                <option value="all">All Regions</option>
+                <option value="imported">Has Imports</option>
+                <option value="missing">Missing Imports</option>
+                <option value="exported">Exported (fresh)</option>
+                <option value="stale">Needs Export</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="divider"></div>
+
+          <div id="workspace-results" class="card slim hidden" style="margin-bottom: 16px;"></div>
+
+          <div id="import-guide" class="card slim" style="margin-bottom: 16px;"></div>
+
+          <div id="manifest-card" class="card slim" style="margin-bottom: 16px;">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><span class="icon">🧾</span>Dependency Manifest</div>
+                <div class="card-sub">Core inputs → generated outputs per region.</div>
+              </div>
+              <div class="file-actions">
+                <button class="btn btn-outline" id="download-manifest"><span class="icon">⬇️</span>Download JSON</button>
+              </div>
+            </div>
+            <div class="grid cols-2">
+              <label class="field">
+                Region
+                <select class="select" id="manifest-region"></select>
+              </label>
+              <label class="field">
+                Status Snapshot
+                <div class="badges" id="manifest-summary"></div>
+              </label>
+            </div>
+            <div class="divider"></div>
+            <div class="grid cols-2">
+              <div>
+                <div class="card-sub">Core Inputs</div>
+                <div id="manifest-core"></div>
+              </div>
+              <div>
+                <div class="card-sub">Outputs</div>
+                <div id="manifest-outputs"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="region-library" class="accordion" data-accordion></div>
+        </div>
+
+        <div data-section-panel="imports" class="hidden">
+          <div class="grid cols-2">
+            <div class="card slim">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Recent Imports</div>
+                <div class="card-sub">Latest import jobs with status.</div>
+              </div>
+              <div class="filter-group">
+                <input class="input" id="imports-search" placeholder="Search id, region, file" />
+                <input class="input" type="date" id="imports-start" />
+                <input class="input" type="date" id="imports-end" />
+              </div>
+            </div>
+              <div class="table-wrap">
+                <table class="table" id="imports-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Region</th>
+                      <th>Status</th>
+                      <th>Requested</th>
+                      <th>Files</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card slim">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">Import Error Log</div>
+                  <div class="card-sub">Failed imports with error details.</div>
+                </div>
+                <input class="input" id="import-error-search" placeholder="Search errors" />
+              </div>
+              <div class="table-wrap">
+                <table class="table" id="errors-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Region</th>
+                      <th>Error</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div data-section-panel="exports" class="hidden">
+          <div class="grid cols-2">
+            <div class="card slim">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Export History</div>
+                <div class="card-sub">Latest regeneration runs.</div>
+              </div>
+              <div class="filter-group">
+                <input class="input" id="exports-search" placeholder="Search id, region, status" />
+                <input class="input" type="date" id="exports-start" />
+                <input class="input" type="date" id="exports-end" />
+              </div>
+            </div>
+              <div class="table-wrap">
+                <table class="table" id="exports-table">
+                  <thead>
+                    <tr>
+                      <th>Export ID</th>
+                      <th>Status</th>
+                      <th>Region</th>
+                      <th>Requested</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card slim">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Output Library</div>
+                <div class="card-sub">Regenerated files per region.</div>
+              </div>
+              <div class="filter-group">
+                <input class="input" id="outputs-search" placeholder="Search region, file, category" />
+                <select class="select" id="outputs-run"></select>
+                <select class="select" id="outputs-status">
+                  <option value="all">All Status</option>
+                  <option value="generated">Generated</option>
+                  <option value="passthrough">Passthrough</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table" id="outputs-table">
+                <thead>
+                  <tr>
+                    <th>Region</th>
+                    <th>File</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Run</th>
+                  </tr>
+                </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="dialog" id="preview-dialog">
+    <div class="dialog-card">
+      <div class="dialog-header">
+        <div>
+          <div class="card-title" id="preview-title">File Preview</div>
+          <div class="card-sub" id="preview-subtitle"></div>
+        </div>
+        <button class="btn btn-outline" data-dialog-close>Close</button>
+      </div>
+      <div class="dialog-body" data-dialog-body></div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+  <script src="/static/imports.js"></script>
+</body>
+</html>

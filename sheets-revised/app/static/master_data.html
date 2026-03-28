@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SMM Sheets – Master Data</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <div class="topbar">
+    <button class="menu-btn" data-menu-toggle>☰</button>
+    <div class="brand">
+      <div class="logo">SMM</div>
+      <div>
+        <div class="title">Sales Ops</div>
+        <div class="subtitle">Master Data</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">SMM</div>
+        <div>
+          <div class="title">Sales Ops</div>
+          <div class="subtitle">All Regions</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/daily-sales"><span class="icon">📈</span>Daily Sales</a>
+        <a href="/outlets"><span class="icon">🏪</span>Outlets</a>
+        <a class="active" href="/master-data"><span class="icon">🗂️</span>Master Data</a>
+        <a href="/imports"><span class="icon">📥</span>Import Hub</a>
+        <a href="/quality"><span class="icon">✅</span>Data Quality</a>
+        <a href="/reports"><span class="icon">📊</span>Reports</a>
+      </nav>
+      <div class="footer">SMM Sheets · Production Workspace</div>
+    </aside>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Master Data Control</h1>
+          <p class="page-sub">Browse products, townships, routes, and PJP plans without long scrolling.</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-outline" id="master-refresh"><span class="icon">⟳</span>Reload</button>
+        </div>
+      </div>
+
+      <div class="top-tabs" data-sync-scroll="primary-tabs">
+        <a class="tab" href="/daily-sales"><span class="icon">📈</span>Daily Sales</a>
+        <a class="tab" href="/outlets"><span class="icon">🏪</span>Outlets</a>
+        <a class="tab active" href="/master-data"><span class="icon">🗂️</span>Master Data</a>
+        <a class="tab" href="/imports"><span class="icon">📥</span>Import Hub</a>
+        <a class="tab" href="/quality"><span class="icon">✅</span>Data Quality</a>
+        <a class="tab" href="/reports"><span class="icon">📊</span>Reports</a>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">🎛️</span>Filters</div>
+            <div class="card-sub">Limit lists by region or keyword.</div>
+          </div>
+        </div>
+        <div class="grid cols-3">
+          <label class="field">
+            Region
+            <select class="select" id="master-region">
+              <option value="">All Regions</option>
+            </select>
+          </label>
+          <label class="field">
+            Search
+            <input class="input" id="master-search" placeholder="Search name or id" />
+          </label>
+          <label class="field">
+            PJP Date
+            <input class="input" type="date" id="pjp-date" />
+          </label>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 22px;">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">🧩</span>Master Data Sections</div>
+            <div class="card-sub">Each section is its own list with dedicated tools.</div>
+          </div>
+        </div>
+        <div class="section-tabs" data-section-tabs data-default-section="products">
+          <button data-section="products"><span class="icon">📦</span>Products</button>
+          <button data-section="townships"><span class="icon">📍</span>Townships</button>
+          <button data-section="routes"><span class="icon">🗺️</span>Routes</button>
+          <button data-section="pjp"><span class="icon">🗓️</span>PJP Plans</button>
+          <button data-section="history"><span class="icon">🕘</span>History</button>
+        </div>
+
+        <div data-section-panel="products">
+          <div class="table-wrap">
+            <table class="table" id="products-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Brand</th>
+                  <th>Category</th>
+                  <th>Sales Price</th>
+                  <th>Pack Size</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div data-section-panel="townships" class="hidden">
+          <div class="table-wrap">
+            <table class="table" id="townships-table">
+              <thead>
+                <tr>
+                  <th>Township</th>
+                  <th>Region</th>
+                  <th>Aliases</th>
+                  <th>Source File</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div data-section-panel="routes" class="hidden">
+          <div class="table-wrap">
+            <table class="table" id="routes-table">
+              <thead>
+                <tr>
+                  <th>Route</th>
+                  <th>Region</th>
+                  <th>Van</th>
+                  <th>Way</th>
+                  <th>Township</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div data-section-panel="pjp" class="hidden">
+          <div class="table-wrap">
+            <table class="table" id="pjp-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Route</th>
+                  <th>Total Planned</th>
+                  <th>Planned A</th>
+                  <th>Planned B</th>
+                  <th>Planned C</th>
+                  <th>Planned D</th>
+                  <th>Planned S</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div data-section-panel="history" class="hidden">
+          <div class="table-wrap">
+            <table class="table" id="history-table">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>ID</th>
+                  <th>Region</th>
+                  <th>Effective From</th>
+                  <th>Effective To</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+  <script src="/static/master.js"></script>
+</body>
+</html>

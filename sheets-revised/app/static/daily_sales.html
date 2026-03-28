@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SMM Sheets – Daily Sales</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <div class="topbar">
+    <button class="menu-btn" data-menu-toggle>☰</button>
+    <div class="brand">
+      <div class="logo">SMM</div>
+      <div>
+        <div class="title">Sales Ops</div>
+        <div class="subtitle">Daily Sales</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">SMM</div>
+        <div>
+          <div class="title">Sales Ops</div>
+          <div class="subtitle">All Regions</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a class="active" href="/daily-sales"><span class="icon">📈</span>Daily Sales</a>
+        <a href="/outlets"><span class="icon">🏪</span>Outlets</a>
+        <a href="/master-data"><span class="icon">🗂️</span>Master Data</a>
+        <a href="/imports"><span class="icon">📥</span>Import Hub</a>
+        <a href="/quality"><span class="icon">✅</span>Data Quality</a>
+        <a href="/reports"><span class="icon">📊</span>Reports</a>
+      </nav>
+      <div class="footer">SMM Sheets · Production Workspace</div>
+    </aside>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Daily Sales Control</h1>
+          <p class="page-sub">Track daily transactions, SKU movement, and outlet performance with minimal steps.</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-outline" id="today-btn"><span class="icon">◴</span>Today</button>
+          <button class="btn btn-primary" id="refresh-btn"><span class="icon">⟳</span>Refresh</button>
+        </div>
+      </div>
+
+      <div class="top-tabs" data-sync-scroll="primary-tabs">
+        <a class="tab active" href="/daily-sales"><span class="icon">📈</span>Daily Sales</a>
+        <a class="tab" href="/outlets"><span class="icon">🏪</span>Outlets</a>
+        <a class="tab" href="/master-data"><span class="icon">🗂️</span>Master Data</a>
+        <a class="tab" href="/imports"><span class="icon">📥</span>Import Hub</a>
+        <a class="tab" href="/quality"><span class="icon">✅</span>Data Quality</a>
+        <a class="tab" href="/reports"><span class="icon">📊</span>Reports</a>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">🎯</span>Scope</div>
+            <div class="card-sub">Choose a single day for transaction view, and a range for analytics.</div>
+          </div>
+        </div>
+        <div class="grid cols-3">
+          <label class="field">
+            Day
+            <input class="input" type="date" id="day-input" />
+          </label>
+          <label class="field">
+            Range Start
+            <input class="input" type="date" id="range-start" />
+          </label>
+          <label class="field">
+            Range End
+            <input class="input" type="date" id="range-end" />
+          </label>
+        </div>
+      </div>
+
+      <div class="grid cols-4" style="margin-top: 18px;">
+        <div class="card stat">
+          <span class="label">Total Packs</span>
+          <span class="value" id="stat-pack">-</span>
+        </div>
+        <div class="card stat">
+          <span class="label">Total Bottles</span>
+          <span class="value" id="stat-bottle">-</span>
+        </div>
+        <div class="card stat">
+          <span class="label">Total Liters</span>
+          <span class="value" id="stat-liter">-</span>
+        </div>
+        <div class="card stat">
+          <span class="label">Active Outlets</span>
+          <span class="value" id="stat-outlet">-</span>
+        </div>
+      </div>
+
+      <div class="grid cols-3" style="margin-top: 18px;">
+        <div class="card stat">
+          <span class="label">Missing Outlet</span>
+          <span class="value" id="stat-missing-outlet">-</span>
+        </div>
+        <div class="card stat">
+          <span class="label">Missing Product</span>
+          <span class="value" id="stat-missing-product">-</span>
+        </div>
+        <div class="card stat">
+          <span class="label">Missing Route</span>
+          <span class="value" id="stat-missing-route">-</span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 22px;">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">🧭</span>Sales Views</div>
+            <div class="card-sub">Switch between transactions and analytics.</div>
+          </div>
+        </div>
+        <div class="section-tabs" data-section-tabs data-default-section="transactions">
+          <button data-section="transactions"><span class="icon">🧾</span>Transactions</button>
+          <button data-section="sku"><span class="icon">🏷️</span>SKU Breakdown</button>
+          <button data-section="outlet"><span class="icon">🏬</span>Outlet Performance</button>
+          <button data-section="route"><span class="icon">🗺️</span>Route Performance</button>
+        </div>
+
+        <div data-section-panel="transactions">
+          <div class="card slim">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><span class="icon">🧾</span>Daily Transactions</div>
+                <div class="card-sub">Single-day ledger</div>
+              </div>
+              <input class="input" id="txn-search" placeholder="Search outlet, product, voucher" />
+            </div>
+            <div class="table-wrap">
+              <table class="table" id="txn-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Outlet</th>
+                    <th>Product</th>
+                    <th>Pack</th>
+                    <th>Bottle</th>
+                    <th>Liter</th>
+                    <th>Route</th>
+                    <th>Voucher</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div data-section-panel="sku" class="hidden">
+          <div class="card slim">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><span class="icon">🏷️</span>SKU Breakdown</div>
+                <div class="card-sub">Aggregated by product</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table" id="sku-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Pack</th>
+                    <th>Bottle</th>
+                    <th>Liter</th>
+                    <th>Transactions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div data-section-panel="outlet" class="hidden">
+          <div class="card slim">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><span class="icon">🏬</span>Outlet Performance</div>
+                <div class="card-sub">Aggregated by outlet</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table" id="outlet-table">
+                <thead>
+                  <tr>
+                    <th>Outlet</th>
+                    <th>Type</th>
+                    <th>Pack</th>
+                    <th>Bottle</th>
+                    <th>Liter</th>
+                    <th>Transactions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div data-section-panel="route" class="hidden">
+          <div class="card slim">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><span class="icon">🗺️</span>Route Performance</div>
+                <div class="card-sub">Aggregated by route/van</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="table" id="route-table">
+                <thead>
+                  <tr>
+                    <th>Route</th>
+                    <th>Van</th>
+                    <th>Pack</th>
+                    <th>Bottle</th>
+                    <th>Liter</th>
+                    <th>Transactions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+  <script src="/static/daily_sales.js"></script>
+</body>
+</html>

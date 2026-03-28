@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SMM Sheets – Outlets</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <div class="topbar">
+    <button class="menu-btn" data-menu-toggle>☰</button>
+    <div class="brand">
+      <div class="logo">SMM</div>
+      <div>
+        <div class="title">Sales Ops</div>
+        <div class="subtitle">Outlets</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">SMM</div>
+        <div>
+          <div class="title">Sales Ops</div>
+          <div class="subtitle">All Regions</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/daily-sales"><span class="icon">📈</span>Daily Sales</a>
+        <a class="active" href="/outlets"><span class="icon">🏪</span>Outlets</a>
+        <a href="/master-data"><span class="icon">🗂️</span>Master Data</a>
+        <a href="/imports"><span class="icon">📥</span>Import Hub</a>
+        <a href="/quality"><span class="icon">✅</span>Data Quality</a>
+        <a href="/reports"><span class="icon">📊</span>Reports</a>
+      </nav>
+      <div class="footer">SMM Sheets · Production Workspace</div>
+    </aside>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Outlet Browser</h1>
+          <p class="page-sub">Search, clean, and audit outlet records with confidence.</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-outline" id="outlet-refresh"><span class="icon">⟳</span>Refresh</button>
+        </div>
+      </div>
+
+      <div class="top-tabs" data-sync-scroll="primary-tabs">
+        <a class="tab" href="/daily-sales"><span class="icon">📈</span>Daily Sales</a>
+        <a class="tab active" href="/outlets"><span class="icon">🏪</span>Outlets</a>
+        <a class="tab" href="/master-data"><span class="icon">🗂️</span>Master Data</a>
+        <a class="tab" href="/imports"><span class="icon">📥</span>Import Hub</a>
+        <a class="tab" href="/quality"><span class="icon">✅</span>Data Quality</a>
+        <a class="tab" href="/reports"><span class="icon">📊</span>Reports</a>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">🧭</span>Outlet Views</div>
+            <div class="card-sub">Move between list, dedupe, and audit history.</div>
+          </div>
+        </div>
+        <div class="section-tabs" data-section-tabs data-default-section="list">
+          <button data-section="list"><span class="icon">📋</span>Outlet List</button>
+          <button data-section="dedupe"><span class="icon">🧹</span>Dedupe Candidates</button>
+          <button data-section="history"><span class="icon">🕘</span>Change History</button>
+        </div>
+
+        <div data-section-panel="list">
+          <div class="card slim">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><span class="icon">🏬</span>All Outlets</div>
+                <div class="card-sub">Filter by name, phone, township.</div>
+              </div>
+              <div class="badges">
+                <span class="tag" id="outlet-count">0 shown</span>
+              </div>
+            </div>
+            <div class="grid cols-2">
+              <label class="field">
+                Search
+                <input class="input" id="outlet-search" placeholder="Name, phone, township" />
+              </label>
+              <label class="field">
+                Status
+                <select class="select" id="outlet-active">
+                  <option value="active" selected>Active only</option>
+                  <option value="all">Include inactive</option>
+                </select>
+              </label>
+            </div>
+            <div class="table-wrap" style="margin-top: 12px;">
+              <table class="table" id="outlet-table">
+                <thead>
+                  <tr>
+                    <th>Outlet</th>
+                    <th>Type</th>
+                    <th>Township</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div data-section-panel="dedupe" class="hidden">
+          <div class="card slim">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><span class="icon">🧹</span>Potential Duplicates</div>
+                <div class="card-sub">Grouped by phone or similar names.</div>
+              </div>
+              <input class="input" id="dedupe-search" placeholder="Filter by outlet name" />
+            </div>
+            <div id="dedupe-list" class="accordion" data-accordion></div>
+          </div>
+        </div>
+
+        <div data-section-panel="history" class="hidden">
+          <div class="card slim">
+            <div class="card-header">
+              <div>
+                <div class="card-title"><span class="icon">🕘</span>Outlet Change History</div>
+                <div class="card-sub">Audit of edits over time.</div>
+              </div>
+              <input class="input" id="history-search" placeholder="Search outlet id or action" />
+            </div>
+            <div class="table-wrap">
+              <table class="table" id="history-table">
+                <thead>
+                  <tr>
+                    <th>Outlet</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Region</th>
+                    <th>Effective From</th>
+                    <th>Effective To</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+  <script src="/static/outlets.js"></script>
+</body>
+</html>

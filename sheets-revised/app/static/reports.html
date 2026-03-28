@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SMM Sheets – Reports</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <div class="topbar">
+    <button class="menu-btn" data-menu-toggle>☰</button>
+    <div class="brand">
+      <div class="logo">SMM</div>
+      <div>
+        <div class="title">Sales Ops</div>
+        <div class="subtitle">Reports</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">SMM</div>
+        <div>
+          <div class="title">Sales Ops</div>
+          <div class="subtitle">All Regions</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/daily-sales"><span class="icon">📈</span>Daily Sales</a>
+        <a href="/outlets"><span class="icon">🏪</span>Outlets</a>
+        <a href="/master-data"><span class="icon">🗂️</span>Master Data</a>
+        <a href="/imports"><span class="icon">📥</span>Import Hub</a>
+        <a href="/quality"><span class="icon">✅</span>Data Quality</a>
+        <a class="active" href="/reports"><span class="icon">📊</span>Reports</a>
+      </nav>
+      <div class="footer">SMM Sheets · Production Workspace</div>
+    </aside>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Reports Dashboard</h1>
+          <p class="page-sub">Analyze performance, export curated files, and track regeneration history.</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-outline" id="reports-refresh"><span class="icon">⟳</span>Refresh</button>
+          <button class="btn btn-primary" id="download-latest"><span class="icon">⬇️</span>Download Latest Export</button>
+        </div>
+      </div>
+
+      <div class="top-tabs" data-sync-scroll="primary-tabs">
+        <a class="tab" href="/daily-sales"><span class="icon">📈</span>Daily Sales</a>
+        <a class="tab" href="/outlets"><span class="icon">🏪</span>Outlets</a>
+        <a class="tab" href="/master-data"><span class="icon">🗂️</span>Master Data</a>
+        <a class="tab" href="/imports"><span class="icon">📥</span>Import Hub</a>
+        <a class="tab" href="/quality"><span class="icon">✅</span>Data Quality</a>
+        <a class="tab active" href="/reports"><span class="icon">📊</span>Reports</a>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">🎯</span>Reporting Scope</div>
+            <div class="card-sub">Set date range for summary and analytics.</div>
+          </div>
+        </div>
+        <div class="grid cols-3">
+          <label class="field">
+            Start Date
+            <input class="input" type="date" id="report-start" />
+          </label>
+          <label class="field">
+            End Date
+            <input class="input" type="date" id="report-end" />
+          </label>
+          <label class="field">
+            Export Region
+            <select class="select" id="report-region">
+              <option value="">All Regions</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="grid cols-4" style="margin-top: 18px;">
+        <div class="card stat">
+          <span class="label">Total Sales (Pack)</span>
+          <span class="value" id="rep-pack">-</span>
+        </div>
+        <div class="card stat">
+          <span class="label">Total Liters</span>
+          <span class="value" id="rep-liter">-</span>
+        </div>
+        <div class="card stat">
+          <span class="label">Active Outlets</span>
+          <span class="value" id="rep-outlet">-</span>
+        </div>
+        <div class="card stat">
+          <span class="label">Import Errors</span>
+          <span class="value" id="rep-errors">-</span>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top: 22px;">
+        <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">📈</span>Performance Trends</div>
+            <div class="card-sub">Daily movement of packs and liters.</div>
+          </div>
+        </div>
+          <div class="chart-legend">
+            <span><i class="legend-dot" style="background:#146e62;"></i>Liters</span>
+            <span><i class="legend-dot" style="background:#2f405a;"></i>Packs</span>
+          </div>
+          <div class="chart-wrap">
+            <svg id="trend-chart" width="100%" height="240" viewBox="0 0 640 240" preserveAspectRatio="none"></svg>
+          </div>
+          <div class="divider"></div>
+          <div class="insight-grid" id="trend-insights"></div>
+        </div>
+        <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">🏅</span>Top Products</div>
+            <div class="card-sub">Highest liters in selected range.</div>
+          </div>
+        </div>
+          <div class="bar-list" id="top-products"></div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top: 22px;">
+        <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">📚</span>Report Output Library</div>
+            <div class="card-sub">Files regenerated from core sources.</div>
+          </div>
+        </div>
+          <div class="table-wrap">
+            <table class="table" id="output-table">
+              <thead>
+                <tr>
+                  <th>Region</th>
+                  <th>File</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">🕘</span>Export History</div>
+            <div class="card-sub">Latest exports available for download.</div>
+          </div>
+        </div>
+          <div class="table-wrap">
+            <table class="table" id="export-table">
+              <thead>
+                <tr>
+                  <th>Export ID</th>
+                  <th>Region</th>
+                  <th>Status</th>
+                  <th>Requested</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 22px;">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">🧾</span>Export Manifests</div>
+            <div class="card-sub">Per-region regeneration manifest summary.</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="table" id="manifest-table">
+            <thead>
+              <tr>
+                <th>Region</th>
+                <th>Total Files</th>
+                <th>Generated</th>
+                <th>Passthrough</th>
+                <th>Categories</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+  <script src="/static/reports.js"></script>
+</body>
+</html>

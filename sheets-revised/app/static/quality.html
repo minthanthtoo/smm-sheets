@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SMM Sheets – Data Quality</title>
+  <link rel="stylesheet" href="/static/app.css" />
+</head>
+<body>
+  <div class="topbar">
+    <button class="menu-btn" data-menu-toggle>☰</button>
+    <div class="brand">
+      <div class="logo">SMM</div>
+      <div>
+        <div class="title">Sales Ops</div>
+        <div class="subtitle">Data Quality</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo">SMM</div>
+        <div>
+          <div class="title">Sales Ops</div>
+          <div class="subtitle">All Regions</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/daily-sales"><span class="icon">📈</span>Daily Sales</a>
+        <a href="/outlets"><span class="icon">🏪</span>Outlets</a>
+        <a href="/master-data"><span class="icon">🗂️</span>Master Data</a>
+        <a href="/imports"><span class="icon">📥</span>Import Hub</a>
+        <a class="active" href="/quality"><span class="icon">✅</span>Data Quality</a>
+        <a href="/reports"><span class="icon">📊</span>Reports</a>
+      </nav>
+      <div class="footer">SMM Sheets · Production Workspace</div>
+    </aside>
+
+    <main class="main">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Data Quality Center</h1>
+          <p class="page-sub">Track missing fields, import health, and resolved actions.</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-outline" id="quality-refresh"><span class="icon">⟳</span>Refresh</button>
+        </div>
+      </div>
+
+      <div class="top-tabs" data-sync-scroll="primary-tabs">
+        <a class="tab" href="/daily-sales"><span class="icon">📈</span>Daily Sales</a>
+        <a class="tab" href="/outlets"><span class="icon">🏪</span>Outlets</a>
+        <a class="tab" href="/master-data"><span class="icon">🗂️</span>Master Data</a>
+        <a class="tab" href="/imports"><span class="icon">📥</span>Import Hub</a>
+        <a class="tab active" href="/quality"><span class="icon">✅</span>Data Quality</a>
+        <a class="tab" href="/reports"><span class="icon">📊</span>Reports</a>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">⚠</span>Issue Scanner</div>
+            <div class="card-sub">Inspect records with missing fields.</div>
+          </div>
+        </div>
+        <div class="grid cols-3">
+          <label class="field">
+            Issue Type
+            <select class="select" id="issue-kind">
+              <option value="missing_outlet">Missing Outlet</option>
+              <option value="missing_product">Missing Product</option>
+              <option value="missing_date">Missing Date</option>
+              <option value="missing_liter">Missing Liter</option>
+              <option value="missing_route">Missing Route</option>
+            </select>
+          </label>
+          <label class="field">
+            Start Date
+            <input class="input" type="date" id="issue-start" />
+          </label>
+          <label class="field">
+            End Date
+            <input class="input" type="date" id="issue-end" />
+          </label>
+        </div>
+        <div class="table-wrap" style="margin-top: 14px;">
+          <table class="table" id="issue-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Outlet</th>
+                <th>Product</th>
+                <th>Route</th>
+                <th>Pack</th>
+                <th>Bottle</th>
+                <th>Liter</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top: 22px;">
+        <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">🩺</span>Import Health Summary</div>
+            <div class="card-sub">Success vs failure by region.</div>
+          </div>
+        </div>
+          <div class="table-wrap">
+            <table class="table" id="health-table">
+              <thead>
+                <tr>
+                  <th>Region</th>
+                  <th>Success</th>
+                  <th>Failed</th>
+                  <th>Total</th>
+                  <th>Last Request</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title"><span class="icon">🛠️</span>Resolve Actions</div>
+            <div class="card-sub">Recent fixes logged by auditors.</div>
+          </div>
+          <input class="input" id="action-search" placeholder="Search audit log" />
+        </div>
+          <div class="table-wrap">
+            <table class="table" id="action-table">
+              <thead>
+                <tr>
+                  <th>Table</th>
+                  <th>Record</th>
+                  <th>Action</th>
+                  <th>Changed At</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+  <script src="/static/quality.js"></script>
+</body>
+</html>
